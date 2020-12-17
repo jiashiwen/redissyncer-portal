@@ -7,14 +7,20 @@ require (
 	github.com/coreos/go-semver v0.3.0 // indirect
 	github.com/coreos/go-systemd v0.0.0-20191104093116-d3cd4ed1dbcf // indirect
 	github.com/coreos/pkg v0.0.0-20180928190104-399ea9e2e55f // indirect
+	github.com/go-redis/redis/v7 v7.4.0
 	github.com/gofrs/uuid v3.3.0+incompatible
 	github.com/gogo/protobuf v1.3.1 // indirect
 	github.com/golang/protobuf v1.4.3 // indirect
 	github.com/google/go-cmp v0.5.0 // indirect
 	github.com/google/uuid v1.1.2 // indirect
-	go.uber.org/zap v1.16.0 // indirect
+	github.com/satori/go.uuid v1.2.0
+	go.uber.org/zap v1.16.0
+	golang.org/x/mod v0.4.0 // indirect
 	golang.org/x/net v0.0.0-20201209123823-ac852fbbde11 // indirect
 	golang.org/x/sys v0.0.0-20201211002650-1f0c578a6b29 // indirect
 	golang.org/x/text v0.3.4 // indirect
+	golang.org/x/tools v0.0.0-20201211185031-d93e913c1a58 // indirect
 	google.golang.org/grpc v1.26.0 // indirect
+	gopkg.in/natefinch/lumberjack.v2 v2.0.0
+	gopkg.in/yaml.v2 v2.2.4
 )

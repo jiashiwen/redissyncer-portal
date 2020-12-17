@@ -2,20 +2,19 @@ package inspection
 
 import (
 	"context"
-	"etcdexample/utils"
-	"fmt"
+	"etcdexample/global"
+	"etcdexample/logger"
 	"github.com/coreos/etcd/clientv3"
 	"github.com/coreos/etcd/clientv3/concurrency"
 	"github.com/gofrs/uuid"
 	"strconv"
-
 	"sync"
 	"time"
 )
 
 const (
-	LastInspectionTime = "lastinspectiontime"
-	InspectLockKey     = "/lock/inspect"
+	LastInspectionTime = "/inspect/lastinspectiontime"
+	InspectLockKey     = "/inspect/execlock"
 )
 
 type Inspector struct {
@@ -37,10 +36,10 @@ type Inspector struct {
 
 //初始化巡检器
 func NewInspector() *Inspector {
-	uuid, _ := uuid.NewV4()
+	name, _ := uuid.NewV4()
 	return &Inspector{
-		ServerName:    uuid.String(),
-		EtcdClient:    utils.GetEtcdClient(),
+		ServerName:    name.String(),
+		EtcdClient:    global.GetEtcdClient(),
 		ExecStatus:    true,
 		InspectTicker: time.NewTicker(5 * time.Second),
 		statusLock:    sync.RWMutex{},
@@ -48,10 +47,9 @@ func NewInspector() *Inspector {
 }
 
 //启动巡检器
-func (ict *Inspector) InspctorStart(wg *sync.WaitGroup) {
+func (ict *Inspector) Start(wg *sync.WaitGroup) {
 	defer wg.Done()
-
-	fmt.Println("Inspector start ...")
+	logger.Logger().Sugar().Info("Inspector start ...")
 
 	//启动监控最后一次轮巡检时间戳
 	wg.Add(1)
@@ -74,9 +72,9 @@ func (ict *Inspector) SetExecStatus(status bool) {
 func (ict *Inspector) WatchInspectLastTime(wg *sync.WaitGroup) {
 	defer wg.Done()
 	rch := ict.EtcdClient.Watch(context.Background(), LastInspectionTime) // <-chan WatchResponse
-	for wresp := range rch {
-		for _, ev := range wresp.Events {
-			fmt.Printf("Type: %s Key:%s Value:%s\n", ev.Type, ev.Kv.Key, ev.Kv.Value)
+	for resp := range rch {
+		for _, ev := range resp.Events {
+			logger.Logger().Sugar().Infof("Type: %s Key:%s Value:%s\n", ev.Type, ev.Kv.Key, ev.Kv.Value)
 			ict.SetExecStatus(false)
 		}
 	}
@@ -91,9 +89,10 @@ func (ict *Inspector) CheckExecStatus(wg *sync.WaitGroup) {
 		if ict.ExecStatus == true {
 			unixNano := strconv.FormatInt(time.Now().UnixNano(), 10)
 			if _, err := ict.EtcdClient.Put(context.Background(), LastInspectionTime, unixNano); err != nil {
-				fmt.Println(err)
+				logger.Logger().Sugar().Error(err)
 				continue
 			}
+			ict.EtcdClient.Get(context.TODO(), "/a/b_ab", clientv3.WithPrevKV())
 			ict.execInspect()
 		} else {
 			ict.SetExecStatus(true)
@@ -107,7 +106,7 @@ func (ict *Inspector) execInspect() {
 	//有其他任务执行时，发送LastInspectionTime
 	session, err := concurrency.NewSession(ict.EtcdClient)
 	if err != nil {
-		fmt.Println(err)
+		logger.Logger().Sugar().Error(err)
 		return
 	}
 
@@ -115,14 +114,16 @@ func (ict *Inspector) execInspect() {
 	unixNano := strconv.FormatInt(time.Now().UnixNano(), 10)
 	if err := m.Lock(context.TODO()); err != nil {
 		if _, err := ict.EtcdClient.Put(context.Background(), LastInspectionTime, unixNano); err != nil {
-			fmt.Println(err)
+			logger.Logger().Sugar().Error(err)
 			return
 		}
 	}
 
 	//ToDo 巡检逻辑
-	fmt.Println("Execute inspection task: ", ict.ServerName)
-	time.Sleep(30 * time.Second)
+	logger.Logger().Sugar().Infof("Execute inspection task: ", ict.ServerName)
+	time.Sleep(50 * time.Second)
 
-	defer m.Unlock(context.TODO())
+	if err := m.Unlock(context.TODO()); err != nil {
+		logger.Logger().Sugar().Error(err)
+	}
 }

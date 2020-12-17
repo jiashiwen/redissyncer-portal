@@ -2,15 +2,15 @@ package main
 
 import (
 	"context"
+	"etcdexample/global"
 	"etcdexample/inspection"
-	"etcdexample/utils"
 	"fmt"
 	"sync"
 	"time"
 )
 
 func main() {
-	cli := utils.GetEtcdClient()
+	cli := global.GetEtcdClient()
 	defer cli.Close()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -37,7 +37,7 @@ func main() {
 	wg := &sync.WaitGroup{}
 
 	wg.Add(1)
-	go inspector.InspctorStart(wg)
+	go inspector.Start(wg)
 	wg.Wait()
 
 }
