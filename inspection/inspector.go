@@ -48,19 +48,22 @@ func NewInspector() *Inspector {
 
 //启动巡检器
 func (ict *Inspector) Start(wg *sync.WaitGroup) {
+	ctx, cancel := context.WithCancel(context.Background())
 	defer wg.Done()
+	defer cancel()
 	logger.Logger().Sugar().Info("Inspector start ...")
 
 	//启动监控最后一次轮巡检时间戳
 	wg.Add(1)
-	go ict.WatchInspectLastTime(wg)
+	go ict.WatchInspectLastTime(ctx, wg)
 
 	//启动定时监控是否可执行状态
 	wg.Add(1)
-	go ict.CheckExecStatus(wg)
+	go ict.CheckExecStatus(ctx, wg)
 	wg.Wait()
 
 }
+
 func (ict *Inspector) SetExecStatus(status bool) {
 	ict.statusLock.Lock()
 	defer ict.statusLock.Unlock()
@@ -69,33 +72,55 @@ func (ict *Inspector) SetExecStatus(status bool) {
 }
 
 // watch etcd中的巡检标志，标志为最后一次巡检的时间戳，若收到其他服务器端巡检时间戳则更改 ExecStatus 为false
-func (ict *Inspector) WatchInspectLastTime(wg *sync.WaitGroup) {
+//ToDo context 改造 解决子线程不退出问题
+func (ict *Inspector) WatchInspectLastTime(ctx context.Context, wg *sync.WaitGroup) {
+	//func (ict *Inspector) WatchInspectLastTime(ctx context.Context) {
 	defer wg.Done()
+
 	rch := ict.EtcdClient.Watch(context.Background(), LastInspectionTime) // <-chan WatchResponse
-	for resp := range rch {
-		for _, ev := range resp.Events {
-			logger.Logger().Sugar().Infof("Type: %s Key:%s Value:%s\n", ev.Type, ev.Kv.Key, ev.Kv.Value)
-			ict.SetExecStatus(false)
+
+	for {
+		select {
+		case resp, _ := <-rch:
+			for _, ev := range resp.Events {
+				logger.Logger().Sugar().Infof("Type: %s Key:%s Value:%s\n", ev.Type, ev.Kv.Key, ev.Kv.Value)
+				ict.SetExecStatus(false)
+			}
+		case <-ctx.Done():
+			return
 		}
 	}
+
+	//for resp := range rch {
+	//
+	//	for _, ev := range resp.Events {
+	//		logger.Logger().Sugar().Infof("Type: %s Key:%s Value:%s\n", ev.Type, ev.Kv.Key, ev.Kv.Value)
+	//		ict.SetExecStatus(false)
+	//	}
+	//}
 }
 
+//ToDo context 改造 解决子线程不退出问题
 //巡检轮询器，定时轮训巡检标志。
 //若ExecStatus为true 则向etcd发送当前时间戳，并执行巡检过程
-func (ict *Inspector) CheckExecStatus(wg *sync.WaitGroup) {
+func (ict *Inspector) CheckExecStatus(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 	for range ict.InspectTicker.C {
-
-		if ict.ExecStatus == true {
-			unixNano := strconv.FormatInt(time.Now().UnixNano(), 10)
-			if _, err := ict.EtcdClient.Put(context.Background(), LastInspectionTime, unixNano); err != nil {
-				logger.Logger().Sugar().Error(err)
-				continue
+		select {
+		case <-ctx.Done():
+			return
+		default:
+			if ict.ExecStatus == true {
+				unixNano := strconv.FormatInt(time.Now().UnixNano(), 10)
+				if _, err := ict.EtcdClient.Put(context.Background(), LastInspectionTime, unixNano); err != nil {
+					logger.Logger().Sugar().Error(err)
+					continue
+				}
+				ict.EtcdClient.Get(context.TODO(), "/a/b_ab", clientv3.WithPrevKV())
+				ict.execInspect()
+			} else {
+				ict.SetExecStatus(true)
 			}
-			ict.EtcdClient.Get(context.TODO(), "/a/b_ab", clientv3.WithPrevKV())
-			ict.execInspect()
-		} else {
-			ict.SetExecStatus(true)
 		}
 	}
 }

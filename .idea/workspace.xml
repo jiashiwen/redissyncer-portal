@@ -2,14 +2,16 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="f94cc921-a5c6-4f3f-8eab-54939dc9ce73" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/resourceutils/etcdutil.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/utils/rotatelogs_unix.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/utils/rotatelogs_windows.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cpufull.go" beforeDir="false" afterPath="$PROJECT_DIR$/cpufull.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/global/globalconfig.go" beforeDir="false" afterPath="$PROJECT_DIR$/global/globalconfig.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/inspection/inspector.go" beforeDir="false" afterPath="$PROJECT_DIR$/inspection/inspector.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/etcdutil.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/globalconfig.go" beforeDir="false" afterPath="$PROJECT_DIR$/global/globalconfig.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vendor/google.golang.org/genproto/googleapis/api/annotations/resource.pb.go" beforeDir="false" afterPath="$PROJECT_DIR$/vendor/google.golang.org/genproto/googleapis/api/annotations/resource.pb.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/vendor/modules.txt" beforeDir="false" afterPath="$PROJECT_DIR$/vendor/modules.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -48,15 +50,23 @@
     <property name="go.sdk.automatically.set" value="true" />
     <property name="go.tried.to.enable.integration.vgo.integrator" value="true" />
     <property name="go.vendoring.notification.had.been.shown" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$USER_HOME$" />
     <property name="settings.editor.selected.configurable" value="settings.saveactions" />
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/logger" />
-      <recent name="$PROJECT_DIR$/resourceutils" />
-      <recent name="$PROJECT_DIR$/commons" />
+      <recent name="$PROJECT_DIR$/httpserver" />
+      <recent name="$PROJECT_DIR$/api" />
+      <recent name="$PROJECT_DIR$" />
+      <recent name="$PROJECT_DIR$/api/v1" />
       <recent name="$PROJECT_DIR$/global" />
+    </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/router" />
+      <recent name="$PROJECT_DIR$/utils" />
+      <recent name="$PROJECT_DIR$/commons" />
+      <recent name="$PROJECT_DIR$/core" />
+      <recent name="$PROJECT_DIR$" />
     </key>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
@@ -67,9 +77,37 @@
     <integration-enabled>true</integration-enabled>
   </component>
   <component name="WindowStateProjectService">
-    <state x="1428" y="438" width="424" height="491" key="FileChooserDialogImpl" timestamp="1607676230190">
+    <state x="95" y="299" width="1014" height="765" key="#Postfix_Completion" timestamp="1608780824249">
       <screen x="0" y="27" width="2560" height="1345" />
     </state>
-    <state x="1428" y="438" width="424" height="491" key="FileChooserDialogImpl/0.27.2560.1345@0.27.2560.1345" timestamp="1607676230190" />
+    <state x="95" y="299" width="1014" height="765" key="#Postfix_Completion/0.27.2560.1345@0.27.2560.1345" timestamp="1608780824249" />
+    <state x="861" y="518" width="580" height="421" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1608518839607">
+      <screen x="0" y="27" width="2560" height="1345" />
+    </state>
+    <state x="861" y="518" width="580" height="421" key="#com.intellij.fileTypes.FileTypeChooser/0.27.2560.1345@0.27.2560.1345" timestamp="1608518839607" />
+    <state x="1428" y="438" width="424" height="491" key="FileChooserDialogImpl" timestamp="1608516698785">
+      <screen x="0" y="27" width="2560" height="1345" />
+    </state>
+    <state x="1428" y="438" width="424" height="491" key="FileChooserDialogImpl/0.27.2560.1345@0.27.2560.1345" timestamp="1608516698785" />
+    <state x="961" y="179" width="638" height="1041" key="find.popup" timestamp="1608773716983">
+      <screen x="0" y="27" width="2560" height="1345" />
+    </state>
+    <state x="961" y="179" width="638" height="1041" key="find.popup/0.27.2560.1345@0.27.2560.1345" timestamp="1608773716983" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/global/globalconfig.go</url>
+          <line>2</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/main.go</url>
+          <line>2</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>
