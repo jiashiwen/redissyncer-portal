@@ -1,7 +1,7 @@
 package httpserver
 
 import (
-	"etcdexample/global"
+	"redissyncer-portal/global"
 	"github.com/fvbock/endless"
 	"github.com/gin-gonic/gin"
 	"syscall"

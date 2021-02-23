@@ -2,9 +2,9 @@ package main
 
 import (
 	"context"
-	"etcdexample/global"
-	"etcdexample/logger"
-	"etcdexample/resourceutils"
+	"redissyncer-portal/global"
+	"redissyncer-portal/logger"
+	"redissyncer-portal/resourceutils"
 	"fmt"
 	"github.com/coreos/etcd/clientv3"
 	"strconv"

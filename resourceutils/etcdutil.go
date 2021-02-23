@@ -3,7 +3,7 @@ package resourceutils
 import (
 	"context"
 	"errors"
-	"etcdexample/logger"
+	"redissyncer-portal/logger"
 	"github.com/coreos/etcd/clientv3"
 	"github.com/coreos/etcd/mvcc/mvccpb"
 	"time"

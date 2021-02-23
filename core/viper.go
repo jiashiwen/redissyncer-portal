@@ -1,8 +1,8 @@
 package core
 
 import (
-	"etcdexample/global"
-	"etcdexample/utils"
+	"redissyncer-portal/global"
+	"redissyncer-portal/utils"
 	"flag"
 	"fmt"
 	"github.com/fsnotify/fsnotify"

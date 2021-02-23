@@ -1,7 +1,7 @@
 package router
 
 import (
-	"etcdexample/httpserver/api"
+	"redissyncer-portal/httpserver/api"
 	"github.com/gin-gonic/gin"
 )
 

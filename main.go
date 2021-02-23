@@ -1,12 +1,12 @@
 package main
 
 import (
-	"etcdexample/core"
-	"etcdexample/global"
-	"etcdexample/httpserver"
-	"etcdexample/httpserver/router"
-	"etcdexample/inspection"
-	"etcdexample/node"
+	"redissyncer-portal/core"
+	"redissyncer-portal/global"
+	"redissyncer-portal/httpserver"
+	"redissyncer-portal/httpserver/router"
+	"redissyncer-portal/inspection"
+	"redissyncer-portal/node"
 	"sync"
 )
 

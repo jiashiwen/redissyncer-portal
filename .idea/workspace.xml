@@ -3,20 +3,22 @@
   <component name="ChangeListManager">
     <list default="true" id="f94cc921-a5c6-4f3f-8eab-54939dc9ce73" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/commons/interfaceutil.go" beforeDir="false" afterPath="$PROJECT_DIR$/commons/interfaceutil.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/commons/stringutil.go" beforeDir="false" afterPath="$PROJECT_DIR$/commons/stringutil.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/config.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config/config.go" beforeDir="false" afterPath="$PROJECT_DIR$/config/config.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cpufull.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/viper.go" beforeDir="false" afterPath="$PROJECT_DIR$/core/viper.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/zap.go" beforeDir="false" afterPath="$PROJECT_DIR$/core/zap.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/global/globalconfig.go" beforeDir="false" afterPath="$PROJECT_DIR$/global/globalconfig.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/global/initetcd.go" beforeDir="false" afterPath="$PROJECT_DIR$/global/initetcd.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/httpserver/api/sys_health.go" beforeDir="false" afterPath="$PROJECT_DIR$/httpserver/api/sys_health.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/httpserver/router/root.go" beforeDir="false" afterPath="$PROJECT_DIR$/httpserver/router/root.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/httpserver/httpserver.go" beforeDir="false" afterPath="$PROJECT_DIR$/httpserver/httpserver.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/httpserver/router/baserouter.go" beforeDir="false" afterPath="$PROJECT_DIR$/httpserver/router/baserouter.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/httpserver/router/defaultrouter.go" beforeDir="false" afterPath="$PROJECT_DIR$/httpserver/router/defaultrouter.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/inspection/inspector.go" beforeDir="false" afterPath="$PROJECT_DIR$/inspection/inspector.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/latest_log" beforeDir="false" afterPath="$PROJECT_DIR$/latest_log" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/multipageexample.go" beforeDir="false" afterPath="$PROJECT_DIR$/resourceutils/multipageexample.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/portal" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/node/node.go" beforeDir="false" afterPath="$PROJECT_DIR$/node/node.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resourceutils/etcdutil.go" beforeDir="false" afterPath="$PROJECT_DIR$/resourceutils/etcdutil.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resourceutils/multipageexample.go" beforeDir="false" afterPath="$PROJECT_DIR$/resourceutils/multipageexample.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/redissyncer-portal-0.2.0-linux-amd64" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/directory.go" beforeDir="false" afterPath="$PROJECT_DIR$/utils/directory.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/rotatelogs_unix.go" beforeDir="false" afterPath="$PROJECT_DIR$/utils/rotatelogs_unix.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

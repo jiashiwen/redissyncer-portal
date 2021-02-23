@@ -1,7 +1,7 @@
 package global
 
 import (
-	"etcdexample/config"
+	"redissyncer-portal/config"
 	"github.com/coreos/etcd/clientv3"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"

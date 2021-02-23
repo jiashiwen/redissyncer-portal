@@ -3,8 +3,8 @@ package inspection
 import (
 	"context"
 	"encoding/json"
-	"etcdexample/global"
-	"etcdexample/node"
+	"redissyncer-portal/global"
+	"redissyncer-portal/node"
 	"github.com/coreos/etcd/clientv3"
 	"github.com/coreos/etcd/clientv3/concurrency"
 	"github.com/gofrs/uuid"

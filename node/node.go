@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"etcdexample/global"
+	"redissyncer-portal/global"
 	"github.com/coreos/etcd/clientv3"
 	"sync"
 	"time"

@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"etcdexample/global"
+	"redissyncer-portal/global"
 	"go.uber.org/zap"
 	"os"
 )

@@ -1,4 +1,4 @@
-module etcdexample
+module redissyncer-portal
 
 go 1.15
 
@@ -22,6 +22,7 @@ require (
 	github.com/satori/go.uuid v1.2.0
 	github.com/spf13/viper v1.7.1
 	github.com/tebeka/strftime v0.1.5 // indirect
+	github.com/tidwall/gjson v1.6.8
 	go.uber.org/zap v1.16.0
 	golang.org/x/mod v0.4.0 // indirect
 	golang.org/x/net v0.0.0-20201209123823-ac852fbbde11 // indirect
