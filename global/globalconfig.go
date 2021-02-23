@@ -23,4 +23,12 @@ func GetEtcdClient() *clientv3.Client {
 	return etcdClient
 }
 
-//公共日志
+//获取node information
+func GetNodeInfo() *config.NodeInfo {
+	var nodeinfo config.NodeInfo
+	err := RSPViper.UnmarshalKey("node", &nodeinfo)
+	if err != nil {
+		panic(err)
+	}
+	return &nodeinfo
+}

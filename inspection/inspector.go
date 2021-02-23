@@ -2,11 +2,13 @@ package inspection
 
 import (
 	"context"
+	"encoding/json"
 	"etcdexample/global"
-	"etcdexample/logger"
+	"etcdexample/node"
 	"github.com/coreos/etcd/clientv3"
 	"github.com/coreos/etcd/clientv3/concurrency"
 	"github.com/gofrs/uuid"
+	"net/http"
 	"strconv"
 	"sync"
 	"time"
@@ -32,36 +34,50 @@ type Inspector struct {
 
 	//巡检状态变更锁
 	statusLock sync.RWMutex
+
+	//巡检器context
+	inspectorContext context.Context
+
+	//巡检器cancle
+	inspectorCancel context.CancelFunc
 }
 
 //初始化巡检器
 func NewInspector() *Inspector {
 	name, _ := uuid.NewV4()
+	ctx, cancel := context.WithCancel(context.Background())
 	return &Inspector{
-		ServerName:    name.String(),
-		EtcdClient:    global.GetEtcdClient(),
-		ExecStatus:    true,
-		InspectTicker: time.NewTicker(5 * time.Second),
-		statusLock:    sync.RWMutex{},
+		ServerName:       name.String(),
+		EtcdClient:       global.GetEtcdClient(),
+		ExecStatus:       true,
+		InspectTicker:    time.NewTicker(5 * time.Second),
+		statusLock:       sync.RWMutex{},
+		inspectorContext: ctx,
+		inspectorCancel:  cancel,
 	}
 }
 
 //启动巡检器
 func (ict *Inspector) Start(wg *sync.WaitGroup) {
-	ctx, cancel := context.WithCancel(context.Background())
 	defer wg.Done()
-	defer cancel()
-	logger.Logger().Sugar().Info("Inspector start ...")
+
+	defer ict.inspectorCancel()
+	global.RSPLog.Sugar().Info("Inspector start ...")
 
 	//启动监控最后一次轮巡检时间戳
 	wg.Add(1)
-	go ict.WatchInspectLastTime(ctx, wg)
+	go ict.WatchInspectLastTime(ict.inspectorContext, wg)
 
 	//启动定时监控是否可执行状态
 	wg.Add(1)
-	go ict.CheckExecStatus(ctx, wg)
+	go ict.CheckExecStatus(ict.inspectorContext, wg)
 	wg.Wait()
 
+}
+
+//停止检查器
+func (ict *Inspector) Stop() {
+	ict.inspectorCancel()
 }
 
 func (ict *Inspector) SetExecStatus(status bool) {
@@ -72,7 +88,6 @@ func (ict *Inspector) SetExecStatus(status bool) {
 }
 
 // watch etcd中的巡检标志，标志为最后一次巡检的时间戳，若收到其他服务器端巡检时间戳则更改 ExecStatus 为false
-//ToDo context 改造 解决子线程不退出问题
 func (ict *Inspector) WatchInspectLastTime(ctx context.Context, wg *sync.WaitGroup) {
 	//func (ict *Inspector) WatchInspectLastTime(ctx context.Context) {
 	defer wg.Done()
@@ -83,24 +98,15 @@ func (ict *Inspector) WatchInspectLastTime(ctx context.Context, wg *sync.WaitGro
 		select {
 		case resp, _ := <-rch:
 			for _, ev := range resp.Events {
-				logger.Logger().Sugar().Infof("Type: %s Key:%s Value:%s\n", ev.Type, ev.Kv.Key, ev.Kv.Value)
+				global.RSPLog.Sugar().Infof("Type: %s Key:%s Value:%s\n", ev.Type, ev.Kv.Key, ev.Kv.Value)
 				ict.SetExecStatus(false)
 			}
 		case <-ctx.Done():
 			return
 		}
 	}
-
-	//for resp := range rch {
-	//
-	//	for _, ev := range resp.Events {
-	//		logger.Logger().Sugar().Infof("Type: %s Key:%s Value:%s\n", ev.Type, ev.Kv.Key, ev.Kv.Value)
-	//		ict.SetExecStatus(false)
-	//	}
-	//}
 }
 
-//ToDo context 改造 解决子线程不退出问题
 //巡检轮询器，定时轮训巡检标志。
 //若ExecStatus为true 则向etcd发送当前时间戳，并执行巡检过程
 func (ict *Inspector) CheckExecStatus(ctx context.Context, wg *sync.WaitGroup) {
@@ -113,10 +119,9 @@ func (ict *Inspector) CheckExecStatus(ctx context.Context, wg *sync.WaitGroup) {
 			if ict.ExecStatus == true {
 				unixNano := strconv.FormatInt(time.Now().UnixNano(), 10)
 				if _, err := ict.EtcdClient.Put(context.Background(), LastInspectionTime, unixNano); err != nil {
-					logger.Logger().Sugar().Error(err)
+					global.RSPLog.Sugar().Error(err)
 					continue
 				}
-				ict.EtcdClient.Get(context.TODO(), "/a/b_ab", clientv3.WithPrevKV())
 				ict.execInspect()
 			} else {
 				ict.SetExecStatus(true)
@@ -131,7 +136,7 @@ func (ict *Inspector) execInspect() {
 	//有其他任务执行时，发送LastInspectionTime
 	session, err := concurrency.NewSession(ict.EtcdClient)
 	if err != nil {
-		logger.Logger().Sugar().Error(err)
+		global.RSPLog.Sugar().Error(err)
 		return
 	}
 
@@ -139,16 +144,77 @@ func (ict *Inspector) execInspect() {
 	unixNano := strconv.FormatInt(time.Now().UnixNano(), 10)
 	if err := m.Lock(context.TODO()); err != nil {
 		if _, err := ict.EtcdClient.Put(context.Background(), LastInspectionTime, unixNano); err != nil {
-			logger.Logger().Sugar().Error(err)
+			global.RSPLog.Sugar().Error(err)
 			return
 		}
 	}
 
-	//ToDo 巡检逻辑
-	logger.Logger().Sugar().Infof("Execute inspection task: ", ict.ServerName)
-	time.Sleep(50 * time.Second)
+	// 巡检逻辑
+	if err := ict.nodeHealthCheck(); err != nil {
+		global.RSPLog.Sugar().Error(err)
+	}
 
 	if err := m.Unlock(context.TODO()); err != nil {
-		logger.Logger().Sugar().Error(err)
+		global.RSPLog.Sugar().Error(err)
 	}
+}
+
+//节点健康检查
+//取LastReportTime字段，与当前时间戳对比若差值大于阈值则说明节点可能离线，检查节点health情况若宕机则改写Online为false
+func (ict *Inspector) nodeHealthCheck() error {
+	getResp, err := ict.EtcdClient.Get(context.Background(), "/nodes", clientv3.WithPrefix())
+
+	if err != nil {
+		return err
+	}
+	var nodeStatus node.NodeStatus
+	for _, v := range getResp.Kvs {
+		if err := json.Unmarshal([]byte(v.Value), &nodeStatus); err != nil {
+			return err
+		}
+		//ToDo 健康检查逻辑
+		//本地时间戳（毫秒）
+		localUnixTimestamp := time.Now().UnixNano() / 1e6
+		if localUnixTimestamp-nodeStatus.LastReportTime > 10000 {
+			if nodeStatus.Online == false {
+				return nil
+			}
+			//执行探活,若确定node离线则修改node online属性为false
+			if !ict.nodeAlive(nodeStatus.NodeAddr, strconv.Itoa(nodeStatus.NodePort)) {
+				nodeStatus.Online = false
+				statusJson, err := json.Marshal(&nodeStatus)
+				if err != nil {
+					global.RSPLog.Sugar().Error(err)
+					return err
+				}
+				if _, err := global.GetEtcdClient().Put(context.Background(), string(v.Key), string(statusJson)); err != nil {
+					global.RSPLog.Sugar().Error(err)
+					return err
+				}
+			}
+		}
+	}
+	return nil
+}
+
+//探活，通过向节点health接口发送请求判断节点是否存活
+func (ict *Inspector) nodeAlive(addr, port string) bool {
+
+	httpclient := &http.Client{}
+	httpclient.Timeout = 5 * time.Second
+	url := "http://" + addr + ":" + port + "/health"
+
+	req, err := http.NewRequest("GET", url, nil)
+
+	if err != nil {
+		return false
+	}
+
+	_, resperr := httpclient.Do(req)
+	if resperr != nil {
+		global.RSPLog.Sugar().Debug(resperr)
+		return false
+	}
+
+	return true
 }

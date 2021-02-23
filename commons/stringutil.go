@@ -15,6 +15,7 @@ var replacer = strings.NewReplacer(
 	"\u2029", replacement,
 )
 
+//替换换行符
 func Replacer(s string) string {
 	return replacer.Replace(s)
 }
