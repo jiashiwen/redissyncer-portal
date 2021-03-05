@@ -18,11 +18,8 @@ func InitEtcd() {
 		panic(err)
 	}
 
-	//fmt.Println(etcdCfg)
-
 	etcdClient, err = clientv3.New(etcdCfg)
 	if err != nil {
 		panic(err)
-
 	}
 }

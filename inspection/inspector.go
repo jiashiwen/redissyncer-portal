@@ -4,22 +4,28 @@ import (
 	"context"
 	"encoding/json"
 	"redissyncer-portal/global"
+	"redissyncer-portal/httpquerry"
 	"redissyncer-portal/node"
-	"github.com/coreos/etcd/clientv3"
-	"github.com/coreos/etcd/clientv3/concurrency"
-	"github.com/gofrs/uuid"
-	"net/http"
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/coreos/etcd/clientv3"
+	"github.com/coreos/etcd/clientv3/concurrency"
+	"github.com/gofrs/uuid"
 )
 
 const (
+	// LastInspectionTime 最后一次的巡检时间戳
 	LastInspectionTime = "/inspect/lastinspectiontime"
-	InspectLockKey     = "/inspect/execlock"
+
+	// InspectLockKey 巡检锁
+	InspectLockKey = "/inspect/execlock"
 )
 
+//Inspector 巡检器
 type Inspector struct {
+
 	//服务器名称
 	ServerName string
 
@@ -36,13 +42,13 @@ type Inspector struct {
 	statusLock sync.RWMutex
 
 	//巡检器context
-	inspectorContext context.Context
+	InspectorContext context.Context
 
 	//巡检器cancle
-	inspectorCancel context.CancelFunc
+	InspectorCancel context.CancelFunc
 }
 
-//初始化巡检器
+// NewInspector 初始化巡检器
 func NewInspector() *Inspector {
 	name, _ := uuid.NewV4()
 	ctx, cancel := context.WithCancel(context.Background())
@@ -52,34 +58,35 @@ func NewInspector() *Inspector {
 		ExecStatus:       true,
 		InspectTicker:    time.NewTicker(5 * time.Second),
 		statusLock:       sync.RWMutex{},
-		inspectorContext: ctx,
-		inspectorCancel:  cancel,
+		InspectorContext: ctx,
+		InspectorCancel:  cancel,
 	}
 }
 
-//启动巡检器
+//Start 启动巡检器
 func (ict *Inspector) Start(wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	defer ict.inspectorCancel()
+	defer ict.InspectorCancel()
 	global.RSPLog.Sugar().Info("Inspector start ...")
 
 	//启动监控最后一次轮巡检时间戳
 	wg.Add(1)
-	go ict.WatchInspectLastTime(ict.inspectorContext, wg)
+	go ict.WatchInspectLastTime(ict.InspectorContext, wg)
 
 	//启动定时监控是否可执行状态
 	wg.Add(1)
-	go ict.CheckExecStatus(ict.inspectorContext, wg)
+	go ict.CheckExecStatus(ict.InspectorContext, wg)
 	wg.Wait()
 
 }
 
-//停止检查器
+// Stop 停止检查器
 func (ict *Inspector) Stop() {
-	ict.inspectorCancel()
+	ict.InspectorCancel()
 }
 
+// SetExecStatus 设置执行状态来判断当 ticker 触发时是否执行巡检
 func (ict *Inspector) SetExecStatus(status bool) {
 	ict.statusLock.Lock()
 	defer ict.statusLock.Unlock()
@@ -87,7 +94,7 @@ func (ict *Inspector) SetExecStatus(status bool) {
 
 }
 
-// watch etcd中的巡检标志，标志为最后一次巡检的时间戳，若收到其他服务器端巡检时间戳则更改 ExecStatus 为false
+// WatchInspectLastTime watch etcd中的巡检标志，标志为最后一次巡检的时间戳，若收到其他服务器端巡检时间戳则更改 ExecStatus 为false
 func (ict *Inspector) WatchInspectLastTime(ctx context.Context, wg *sync.WaitGroup) {
 	//func (ict *Inspector) WatchInspectLastTime(ctx context.Context) {
 	defer wg.Done()
@@ -98,8 +105,10 @@ func (ict *Inspector) WatchInspectLastTime(ctx context.Context, wg *sync.WaitGro
 		select {
 		case resp, _ := <-rch:
 			for _, ev := range resp.Events {
-				global.RSPLog.Sugar().Infof("Type: %s Key:%s Value:%s\n", ev.Type, ev.Kv.Key, ev.Kv.Value)
-				ict.SetExecStatus(false)
+				if string(ev.Kv.Key) == LastInspectionTime {
+					global.RSPLog.Sugar().Debugf("Type: %s Key:%s Value:%s\n", ev.Type, ev.Kv.Key, ev.Kv.Value)
+					ict.SetExecStatus(false)
+				}
 			}
 		case <-ctx.Done():
 			return
@@ -107,7 +116,7 @@ func (ict *Inspector) WatchInspectLastTime(ctx context.Context, wg *sync.WaitGro
 	}
 }
 
-//巡检轮询器，定时轮训巡检标志。
+// CheckExecStatus 巡检轮询器，定时轮训巡检标志。
 //若ExecStatus为true 则向etcd发送当前时间戳，并执行巡检过程
 func (ict *Inspector) CheckExecStatus(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
@@ -180,14 +189,14 @@ func (ict *Inspector) nodeHealthCheck() error {
 				return nil
 			}
 			//执行探活,若确定node离线则修改node online属性为false
-			if !ict.nodeAlive(nodeStatus.NodeAddr, strconv.Itoa(nodeStatus.NodePort)) {
+			if !httpquerry.NodeAlive(nodeStatus.NodeAddr, strconv.Itoa(nodeStatus.NodePort)) {
 				nodeStatus.Online = false
-				statusJson, err := json.Marshal(&nodeStatus)
+				statusJSON, err := json.Marshal(&nodeStatus)
 				if err != nil {
 					global.RSPLog.Sugar().Error(err)
 					return err
 				}
-				if _, err := global.GetEtcdClient().Put(context.Background(), string(v.Key), string(statusJson)); err != nil {
+				if _, err := global.GetEtcdClient().Put(context.Background(), string(v.Key), string(statusJSON)); err != nil {
 					global.RSPLog.Sugar().Error(err)
 					return err
 				}
@@ -195,26 +204,4 @@ func (ict *Inspector) nodeHealthCheck() error {
 		}
 	}
 	return nil
-}
-
-//探活，通过向节点health接口发送请求判断节点是否存活
-func (ict *Inspector) nodeAlive(addr, port string) bool {
-
-	httpclient := &http.Client{}
-	httpclient.Timeout = 5 * time.Second
-	url := "http://" + addr + ":" + port + "/health"
-
-	req, err := http.NewRequest("GET", url, nil)
-
-	if err != nil {
-		return false
-	}
-
-	_, resperr := httpclient.Do(req)
-	if resperr != nil {
-		global.RSPLog.Sugar().Debug(resperr)
-		return false
-	}
-
-	return true
 }

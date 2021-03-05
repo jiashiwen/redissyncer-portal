@@ -9,6 +9,9 @@
 *.log
 **/log
 
+# target
+**/target
+
 # example yaml files dir
 **/execyaml
 
@@ -38,5 +41,13 @@ compare_*
 **/.idea
 
 # vscode
-**/.vscode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# Local History for Visual Studio Code
+.history/
 

@@ -1,8 +1,8 @@
 package router
 
 import (
-	"redissyncer-portal/httpserver/api"
 	"github.com/gin-gonic/gin"
+	"redissyncer-portal/httpserver/api"
 )
 
 func InitBaseRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
@@ -15,4 +15,16 @@ func InitBaseRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
 	}
 
 	return BaseRouter
+}
+
+func InitTaskRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
+	TaskRouter := Router.Group("task")
+	{
+
+		TaskRouter.GET("create", api.TaskCreate)
+		TaskRouter.POST("create", api.TaskCreate)
+
+	}
+
+	return TaskRouter
 }

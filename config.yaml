@@ -21,8 +21,11 @@ zap:
 # etcd client configuration
 etcd:
   endpoints:
-    - '114.67.112.67:2379'
+    - '116.196.106.51:2379'
   dialtimeout: 5s
+  username: etcdtest
+  password: "123456"
+
 
 # node information
 node:

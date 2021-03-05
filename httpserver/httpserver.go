@@ -8,14 +8,6 @@ import (
 	"time"
 )
 
-//func StartHttpServer() {
-//	//defer wg.Done()
-//	r := router.RootRouter()
-//	addr := "0.0.0.0:" + global.RSPViper.GetString("http.port")
-//	s := initServer(addr, r)
-//
-//}
-
 func StartServer(address string, router *gin.Engine) {
 	s := endless.NewServer(address, router)
 	s.ReadHeaderTimeout = 10 * time.Millisecond

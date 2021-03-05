@@ -2,7 +2,7 @@ package resourceutils
 
 import (
 	"context"
-	"etcdexample/global"
+	"redissyncer-portal/global"
 	"fmt"
 	"github.com/coreos/etcd/clientv3"
 	"strconv"

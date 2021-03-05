@@ -1,7 +1,7 @@
 package logger
 
 import (
-	"etcdexample/commons"
+	"redissyncer-portal/commons"
 	"fmt"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"

@@ -14,6 +14,7 @@ const (
 	NodesKeyPrefix = "/nodes/"
 )
 
+//本节点描述
 type Node struct {
 	//节点类型
 	NodeType string `mapstructure:"nodetype" json:"nodetype" yaml:"nodetype"`
@@ -40,6 +41,7 @@ type Node struct {
 	NodeCancel context.CancelFunc
 }
 
+//本节点状态
 type NodeStatus struct {
 	//节点ip地址
 	NodeAddr string `mapstructure:"nodeaddr" json:"nodeaddr" yaml:"nodeaddr"`

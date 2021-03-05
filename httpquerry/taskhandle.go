@@ -1,3 +1,6 @@
+//用于访问redissyncer-server
+//任务操作包括：创建任务、启动任务、任务查询、任务停止和任务删除
+
 package httpquerry
 
 import (
@@ -11,8 +14,6 @@ import (
 	"time"
 )
 
-//var logger = globalzap.GetLogger()
-
 const (
 	UrlLogin       = "/login"
 	UrlCreateTask  = "/api/v2/createtask"
@@ -23,15 +24,23 @@ const (
 	ImportFilePath = "/api/v2/file/createtask"
 )
 
-type Request struct {
-	Server string
-	Api    string
-	Body   string
+type HttpRequest struct {
+	Server     string
+	Api        string
+	Body       string
+	HttpClient *http.Client
 }
 
-func (r Request) ExecRequest() (string, error) {
-	client := &http.Client{}
-	client.Timeout = 30 * time.Second
+func New(server string) *HttpRequest {
+	httpRequest := &HttpRequest{
+		Server:     server,
+		HttpClient: &http.Client{},
+	}
+	httpRequest.HttpClient.Timeout = 15 * time.Second
+	return httpRequest
+}
+
+func (r *HttpRequest) ExecRequest() (string, error) {
 
 	req, err := http.NewRequest("POST", r.Server+r.Api, strings.NewReader(r.Body))
 	if err != nil {
@@ -41,29 +50,29 @@ func (r Request) ExecRequest() (string, error) {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("x-token", viper.GetString("token"))
 
-	resp, resperr := client.Do(req)
+	resp, respErr := r.HttpClient.Do(req)
 
-	if resperr != nil {
-		return "", resperr
+	if respErr != nil {
+		return "", respErr
 	}
 	defer resp.Body.Close()
 
-	body, readerr := ioutil.ReadAll(resp.Body)
-	if readerr != nil {
-		return "", readerr
+	body, readErr := ioutil.ReadAll(resp.Body)
+	if readErr != nil {
+		return "", readErr
 	}
 
 	var dat map[string]interface{}
 	json.Unmarshal(body, &dat)
-	bodystr, jsonerr := json.MarshalIndent(dat, "", " ")
-	if jsonerr != nil {
-		return "", jsonerr
+	bodyStr, jsonErr := json.MarshalIndent(dat, "", " ")
+	if jsonErr != nil {
+		return "", jsonErr
 	}
-	return string(bodystr), nil
+	return string(bodyStr), nil
 }
 
 //登录
-func Login(syncserver, username, password string) (string, error) {
+func (r *HttpRequest) Login(username, password string) (string, error) {
 	jsonMap := make(map[string]interface{})
 	jsonMap["username"] = username
 	jsonMap["password"] = password
@@ -71,79 +80,70 @@ func Login(syncserver, username, password string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	loginReq := &Request{
-		Server: syncserver,
-		Api:    UrlLogin,
-		Body:   string(loginJson),
-	}
-	return loginReq.ExecRequest()
+
+	r.Api = UrlLogin
+	r.Body = string(loginJson)
+	return r.ExecRequest()
 }
 
 //创建同步任务
-func CreateTask(syncServer string, createJson string) ([]string, error) {
-	createReq := &Request{
-		Server: syncServer,
-		Api:    UrlCreateTask,
-		Body:   createJson,
-	}
+func (r *HttpRequest) CreateTask(createJson string) ([]string, error) {
 
-	resp, err := createReq.ExecRequest()
+	r.Api = UrlCreateTask
+	r.Body = createJson
+
+	resp, err := r.ExecRequest()
 	if err != nil {
 		return nil, err
 	}
-	taskids := gjson.Get(resp, "data").Array()
-	if len(taskids) == 0 {
+	taskIds := gjson.Get(resp, "data").Array()
+	if len(taskIds) == 0 {
 		return nil, errors.New("task create faile")
 	}
-	taskidsstrarray := []string{}
-	for _, v := range taskids {
-		taskidsstrarray = append(taskidsstrarray, gjson.Get(v.String(), "taskId").String())
+	var taskIdsStrArray []string
+	for _, v := range taskIds {
+		taskIdsStrArray = append(taskIdsStrArray, gjson.Get(v.String(), "taskId").String())
 	}
 
-	return taskidsstrarray, nil
+	return taskIdsStrArray, nil
 
 }
 
 //Start task
-func StartTask(syncserver string, taskid string) (string, error) {
-	jsonmap := make(map[string]interface{})
-	jsonmap["taskid"] = taskid
-	startjson, err := json.Marshal(jsonmap)
+func (r *HttpRequest) StartTask(taskid string) (string, error) {
+	jsonMap := make(map[string]interface{})
+	jsonMap["taskid"] = taskid
+	startJson, err := json.Marshal(jsonMap)
 	if err != nil {
 		return "", err
 	}
-	startreq := &Request{
-		Server: syncserver,
-		Api:    UrlStartTask,
-		Body:   string(startjson),
-	}
-	return startreq.ExecRequest()
+
+	r.Api = UrlStartTask
+	r.Body = string(startJson)
+	return r.ExecRequest()
 
 }
 
 //Stop task by task ids
-func StopTaskByIds(syncserver string, ids []string) (string, error) {
-	jsonmap := make(map[string]interface{})
-
-	jsonmap["taskids"] = ids
-	stopjsonStr, err := json.Marshal(jsonmap)
+func (r *HttpRequest) StopTaskByIds(ids []string) (string, error) {
+	jsonMap := make(map[string]interface{})
+	jsonMap["taskids"] = ids
+	stopJsonStr, err := json.Marshal(jsonMap)
 	if err != nil {
 		return "", err
 	}
-	stopreq := &Request{
-		Server: syncserver,
-		Api:    UrlStopTask,
-		Body:   string(stopjsonStr),
-	}
-	return stopreq.ExecRequest()
+
+	r.Api = UrlStopTask
+	r.Body = string(stopJsonStr)
+	return r.ExecRequest()
 
 }
 
 //Remove task by name
-func RemoveTaskByName(syncserver string, taskname string) (string, error) {
-	jsonmap := make(map[string]interface{})
+func (r *HttpRequest) RemoveTaskByName(taskName string) (string, error) {
+	jsonMap := make(map[string]interface{})
 
-	taskids, err := GetSameTaskNameIds(syncserver, taskname)
+	taskids, err := r.GetSameTaskNameIds(taskName)
 	if err != nil {
 		return "", err
 	}
@@ -152,93 +152,85 @@ func RemoveTaskByName(syncserver string, taskname string) (string, error) {
 		return "", errors.New("no taskid")
 	}
 
-	jsonmap["taskids"] = taskids
-	stopjsonStr, err := json.Marshal(jsonmap)
+	jsonMap["taskids"] = taskids
+	stopJsonStr, err := json.Marshal(jsonMap)
 	if err != nil {
 		return "", err
 	}
-	stopreq := &Request{
-		Server: syncserver,
-		Api:    UrlStopTask,
-		Body:   string(stopjsonStr),
-	}
-	stopreq.ExecRequest()
 
-	removereq := &Request{
-		Server: syncserver,
-		Api:    UrlRemoveTask,
-		Body:   string(stopjsonStr),
-	}
+	r.Api = UrlStopTask
+	r.Body = string(stopJsonStr)
+	r.ExecRequest()
 
-	return removereq.ExecRequest()
+	r.Api = UrlRemoveTask
+	r.Body = string(stopJsonStr)
+
+	return r.ExecRequest()
 
 }
 
 //获取同步任务状态
-func GetTaskStatus(syncserver string, ids []string) (map[string]string, error) {
-	jsonmap := make(map[string]interface{})
+func (r *HttpRequest) GetTaskStatus(ids []string) (map[string]string, error) {
+	jsonMap := make(map[string]interface{})
 
-	jsonmap["regulation"] = "byids"
-	jsonmap["taskids"] = ids
+	jsonMap["regulation"] = "byids"
+	jsonMap["taskids"] = ids
 
-	listtaskjsonStr, err := json.Marshal(jsonmap)
+	listTaskJsonStr, err := json.Marshal(jsonMap)
 	if err != nil {
 		return nil, err
 	}
-	listreq := &Request{
-		Server: syncserver,
-		Api:    UrlListTasks,
-		Body:   string(listtaskjsonStr),
-	}
-	listresp, err := listreq.ExecRequest()
-	taskarray := gjson.Get(listresp, "data").Array()
 
-	if len(taskarray) == 0 {
+	r.Api = UrlListTasks
+	r.Body = string(listTaskJsonStr)
+
+	listResp, err := r.ExecRequest()
+	taskArray := gjson.Get(listResp, "data").Array()
+
+	if len(taskArray) == 0 {
 		return nil, errors.New("No status return")
 	}
 
-	statusmap := make(map[string]string)
+	statusMap := make(map[string]string)
 
-	for _, v := range taskarray {
+	for _, v := range taskArray {
 		id := gjson.Get(v.String(), "taskId").String()
 		status := gjson.Get(v.String(), "status").String()
-		statusmap[id] = status
+		statusMap[id] = status
 	}
 
-	return statusmap, nil
+	return statusMap, nil
 }
 
 // @title    GetSameTaskNameIds
 // @description   获取同名任务列表
-// @auth      Jsw             时间（2020/7/1   10:57 ）
-// @param     syncserver        string         "redissyncer ip:port"
-// @param    taskname        string         "任务名称"
-// @return    taskids        []string         "任务id数组"
-func GetSameTaskNameIds(syncserver string, taskname string) ([]string, error) {
+// @auth      Jsw             2020/7/1   10:57
+// @param    taskName        string         "任务名称"
+// @return    taskIds        []string         "任务id数组"
+func (r *HttpRequest) GetSameTaskNameIds(taskName string) ([]string, error) {
 
-	existstaskids := []string{}
-	listjsonmap := make(map[string]interface{})
-	listjsonmap["regulation"] = "bynames"
-	listjsonmap["tasknames"] = strings.Split(taskname, ",")
-	listjsonStr, err := json.Marshal(listjsonmap)
+	var existTaskIds []string
+	listJsonMap := make(map[string]interface{})
+	listJsonMap["regulation"] = "bynames"
+	listJsonMap["tasknames"] = strings.Split(taskName, ",")
+	listJsonStr, err := json.Marshal(listJsonMap)
 	if err != nil {
 		return nil, err
 	}
-	listtaskreq := &Request{
-		Server: syncserver,
-		Api:    UrlListTasks,
-		Body:   string(listjsonStr),
-	}
-	listresp, err := listtaskreq.ExecRequest()
+
+	r.Api = UrlListTasks
+	r.Body = string(listJsonStr)
+
+	listResp, err := r.ExecRequest()
 	if err != nil {
 		return nil, err
 	}
-	tasklist := gjson.Get(listresp, "data").Array()
+	taskList := gjson.Get(listResp, "data").Array()
 
-	if len(tasklist) > 0 {
-		for _, v := range tasklist {
-			existstaskids = append(existstaskids, gjson.Get(v.String(), "taskId").String())
+	if len(taskList) > 0 {
+		for _, v := range taskList {
+			existTaskIds = append(existTaskIds, gjson.Get(v.String(), "taskId").String())
 		}
 	}
-	return existstaskids, nil
+	return existTaskIds, nil
 }
