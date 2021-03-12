@@ -1,11 +1,11 @@
 package utils
 
 import (
-	"redissyncer-portal/global"
 	zaprotatelogs "github.com/lestrrat-go/file-rotatelogs"
 	"go.uber.org/zap/zapcore"
 	"os"
 	"path"
+	"redissyncer-portal/global"
 	"time"
 )
 
@@ -13,14 +13,13 @@ import (
 //@function: GetWriteSyncer
 //@description: zap logger中加入file-rotatelogs
 //@return: zapcore.WriteSyncer, error
-
 func GetWriteSyncer() (zapcore.WriteSyncer, error) {
 	fileWriter, err := zaprotatelogs.New(
-		path.Join(global.GVA_CONFIG.Zap.Director, "%Y-%m-%d.log"),
+		path.Join(global.RSPConfig.Zap.Director, "%Y-%m-%d.log"),
 		zaprotatelogs.WithMaxAge(7*24*time.Hour),
 		zaprotatelogs.WithRotationTime(24*time.Hour),
 	)
-	if global.GVA_CONFIG.Zap.LogInConsole {
+	if global.RSPConfig.Zap.LogInConsole {
 		return zapcore.NewMultiWriteSyncer(zapcore.AddSync(os.Stdout), zapcore.AddSync(fileWriter)), err
 	}
 	return zapcore.AddSync(fileWriter), err

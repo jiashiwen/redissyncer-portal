@@ -1,23 +1,31 @@
 package api
 
 import (
-	"github.com/gin-gonic/gin"
+	"io/ioutil"
 	"net/http"
+	"redissyncer-portal/global"
+	"redissyncer-portal/httpserver/model/response"
 	"redissyncer-portal/httpserver/service"
+
+	"github.com/gin-gonic/gin"
 )
 
-type User struct {
-	Name     string `json:"name"`
-	Password int64  `json:"password"`
-}
-
 func TaskCreate(c *gin.Context) {
-	json := User{}
-	c.BindJSON(&json)
+	// createjson := model.TaskCreateBody{}
+	// str := ""
+	// c.BindJSON(&str)
+	body, err := ioutil.ReadAll(c.Request.Body)
+	if err != nil {
+		global.RSPLog.Sugar().Error(err)
+	}
 
-	service.TaskCreate()
-	c.JSON(http.StatusOK, gin.H{
-		"name":     json.Name,
-		"password": json.Password,
-	})
+	global.RSPLog.Sugar().Debug(string(body))
+
+	if err := service.CreateTask(string(body)); err != nil {
+		response.FailWithMessage(err.Error(), c)
+	}
+
+	// c.JSON(http.StatusOK, body)
+	c.Data(http.StatusOK, "application/json", body)
+
 }

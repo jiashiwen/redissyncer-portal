@@ -14,8 +14,7 @@ func main() {
 
 	global.RSPViper = core.Viper()
 	global.RSPLog = core.Zap()
-	//etcdClient := global.GetEtcdClient()
-	//defer etcdClient.Close()
+
 	wg := &sync.WaitGroup{}
 
 	//start node
@@ -30,9 +29,9 @@ func main() {
 	inspector := inspection.NewInspector()
 	wg.Add(1)
 	go inspector.Start(wg)
-	//wg.Add(1)
 
 	//启动http server
+	//wg.Add(1)
 	r := router.RootRouter()
 	addr := "0.0.0.0:" + global.RSPViper.GetString("http.port")
 	httpserver.StartServer(addr, r)

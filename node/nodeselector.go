@@ -3,42 +3,37 @@ package node
 
 import (
 	"context"
-	"github.com/coreos/etcd/clientv3"
 	"redissyncer-portal/commons"
+	"redissyncer-portal/global"
 	"strings"
-)
 
-const (
-	NodeIncludeTasks = "/tasks/node/"
-	SearchNodesType  = "/nodes/redissycnerserver/"
+	"github.com/coreos/etcd/clientv3"
 )
 
 type NodeSelector struct {
 	EtcdClient *clientv3.Client
 }
 
-//节点选择器，根据规则选择合适的节点来承载业务
+//SelectNode 节点选择器，根据规则选择合适的节点来承载业务
 //简单做法是选择任务数量最少的节点
 //返回值为节点id及其任务数量的列表
 func (nodeSelector *NodeSelector) SelectNode() (*commons.PairList, error) {
 
 	//获取node节点所有任务数量的map[nodeid]数量
 	nodeIncludeTasks := make(map[string]int64)
-	getResp, err := nodeSelector.EtcdClient.Get(context.Background(), NodeIncludeTasks, clientv3.WithPrefix())
+	getResp, err := nodeSelector.EtcdClient.Get(context.Background(), global.TasksNodePrefix, clientv3.WithPrefix())
 	if err != nil {
 		return nil, err
 	}
 	for _, v := range getResp.Kvs {
-		nodeId := strings.Split(string(v.Key), "/")[3]
-		nodeIncludeTasks[nodeId] = nodeIncludeTasks[nodeId] + 1
+		nodeID := strings.Split(string(v.Key), "/")[3]
+		nodeIncludeTasks[nodeID] = nodeIncludeTasks[nodeID] + 1
 	}
 
 	//根据任务数量进行排序
 	pairList := commons.SortMapByValue(nodeIncludeTasks, false)
-	//获取任务数量最少的节点id
 
-	//探活后返回节点id
-
+	//返回列表结果
 	return &pairList, nil
 
 }

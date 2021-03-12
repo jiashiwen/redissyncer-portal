@@ -28,6 +28,7 @@ compare_*
 *.zip
 *.tar.gz
 *.rar
+
 # go ignore
 **/vendor
 *.exe
@@ -35,7 +36,6 @@ compare_*
 *.dll
 *.so
 *.dylib
-
 
 #idea ignore
 **/.idea
