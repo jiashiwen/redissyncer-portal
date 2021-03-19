@@ -7,28 +7,18 @@ type TaskStatusType int
 type TaskType int
 
 const (
-	//TasksTaskidPrefix 任务id前缀 key:/tasks/taskid/{taskid} ;value: taskstatusjson
-	TasksTaskidPrefix = "/tasks/taskid/"
-	//TasksNodePrefix key:/tasks/node/{nodeId}/{taskId}; value:{"nodeId":"xxx","taskId":"xxx"}
-	TasksNodePrefix = "/tasks/node/"
-	//TasksGroupidPrefix key:/tasks/groupid/{groupid}/{taskId};value:{"groupId":"xxx","taskId":"xxx"}
-	TasksGroupidPrefix = "/tasks/groupid/"
-	//TasksStatusPrefix key:/tasks/status/{currentstatus}/{taskid};value:{"taskId":"testId"}
-	TasksStatusPrefix = "/tasks/status/"
-	//TasksRdbversionPrefix key:/tasks/rdbversion/{redisVersion}/{rdbVersion};value:{"id":1,"redis_version": "2.6","rdb_version": 6}
-	TasksRdbversionPrefix = "/tasks/rdbversion/"
-	//TasksOffsetPrefix key:/tasks/offset/{taskId};value:{"replId":"xxx","replOffset":"-1"}
-	TasksOffsetPrefix = "/tasks/offset/"
-	//TasksNamePrefix key:/tasks/name/{taskname};value:{"taskId":"testId"}
-	TasksNamePrefix = "/tasks/name/"
-	//TasksTypePrefix key:/tasks/type/{type}/{taskId};value:{"taskid":"xxx","groupId":"xxx","nodeId":"xxx"}
-	TasksTypePrefix = "/tasks/type/"
-	//TasksBigkeyPrefix key:/tasks/bigkey/{taskId}/{bigKey};value:{"id":1,"taskId":"xxx","command":"xxx","command_type":"xxx"}
-	TasksBigkeyPrefix = "/tasks/bigkey/"
-	// TasksMd5Prefix key:/tasks/md5/{md5};value:{"taskid":"xxx","groupId":"xxx","nodeId":"xx"}
-	TasksMd5Prefix = "/tasks/md5/"
-	// NodesPrefix key:/nodes/{nodetype}/{nodeID};value:{"nodeaddr":"10.0.0.1","nodeport":8888,"online":true,"lastreporttime":1615275888064}
-	NodesPrefix = "/nodes/"
+	TasksTaskIDPrefix     = "/tasks/taskid/"     //TasksTaskidPrefix 任务id前缀 key:/tasks/taskid/{taskid} ;value: taskstatusjson
+	TasksNodePrefix       = "/tasks/node/"       //TasksNodePrefix key:/tasks/node/{nodeId}/{taskId}; value:{"nodeId":"xxx","taskId":"xxx"}
+	TasksGroupIDPrefix    = "/tasks/groupid/"    //TasksGroupidPrefix key:/tasks/groupid/{groupid}/{taskId};value:{"groupId":"xxx","taskId":"xxx"}
+	TasksStatusPrefix     = "/tasks/status/"     //TasksStatusPrefix key:/tasks/status/{currentstatus}/{taskid};value:{"taskId":"testId"}
+	TasksRdbversionPrefix = "/tasks/rdbversion/" //TasksRdbversionPrefix key:/tasks/rdbversion/{redisVersion}/{rdbVersion};value:{"id":1,"redis_version": "2.6","rdb_version": 6}
+	TasksOffsetPrefix     = "/tasks/offset/"     //TasksOffsetPrefix key:/tasks/offset/{taskId};value:{"replId":"xxx","replOffset":"-1"}
+	TasksNamePrefix       = "/tasks/name/"       //TasksNamePrefix key:/tasks/name/{taskname};value:{"taskId":"testId"}
+	TasksTypePrefix       = "/tasks/type/"       //TasksTypePrefix key:/tasks/type/{type}/{taskId};value:{"taskid":"xxx","groupId":"xxx","nodeId":"xxx"}
+	TasksBigkeyPrefix     = "/tasks/bigkey/"     //TasksBigkeyPrefix key:/tasks/bigkey/{taskId}/{bigKey};value:{"id":1,"taskId":"xxx","command":"xxx","command_type":"xxx"}
+	TasksMd5Prefix        = "/tasks/md5/"        // TasksMd5Prefix key:/tasks/md5/{md5};value:{"taskid":"xxx","groupId":"xxx","nodeId":"xx"}
+	NodesPrefix           = "/nodes/"            // NodesPrefix key:/nodes/{nodetype}/{nodeID};value:{"nodeaddr":"10.0.0.1","nodeport":8888,"online":true,"lastreporttime":1615275888064}
+
 )
 
 const (
@@ -149,6 +139,7 @@ type TaskStatus struct {
 	LastKeyCommitTime  int64    `mapstructure:"lastKeyCommitTime" json:"lastKeyCommitTime" yaml:"lastKeyCommitTime"`
 	LastKeyUpdateTime  int64    `mapstructure:"lastKeyUpdateTime" json:"lastKeyUpdateTime" yaml:"lastKeyUpdateTime"`
 	MD5                string   `mapstructure:"md5" json:"md5" yaml:"md5"`
+	NodeID             string   `mapstructure:"nodeId" json:"nodeId" yaml:"nodeId"`
 	Offset             int64    `mapstructure:"offset" json:"offset" yaml:"offset"`
 	OffsetPlace        int      `mapstructure:"offsetPlace" json:"offsetPlace" yaml:"offsetPlace"`
 	RdbKeyCount        int64    `mapstructure:"rdbKeyCount" json:"rdbKeyCount" yaml:"rdbKeyCount"`
@@ -179,4 +170,23 @@ type TaskStatus struct {
 	TaskName           string   `mapstructure:"taskName" json:"taskName" yaml:"taskName"`
 	TaskType           int      `mapstructure:"tasktype" json:"tasktype" yaml:"tasktype"`
 	TimeDeviation      int64    `mapstructure:"timeDeviation" json:"timeDeviation" yaml:"timeDeviation"`
+}
+
+type TasksOffset struct {
+	ReplID     string `mapstructure:"replId" json:"replId" yaml:"replId"`
+	ReplOffset int64  `mapstructure:"replOffset" json:"replOffset" yaml:"replOffset"`
+}
+
+type TaskIDVal struct {
+	TaskID string `mapstructure:"taskId" json:"taskId" yaml:"taskId"`
+}
+
+type TasksNodeVal struct {
+	NodeID string `mapstructure:"NodeID" json:"NodeID" yaml:"NodeID"`
+	TaskID string `mapstructure:"taskId" json:"taskId" yaml:"taskId"`
+}
+
+type TasksGroupIDVal struct {
+	GroupID string `mapstructure:"groupId" json:"groupId" yaml:"groupId"`
+	TaskID  string `mapstructure:"taskId" json:"taskId" yaml:"taskId"`
 }

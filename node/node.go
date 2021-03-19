@@ -5,9 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"redissyncer-portal/global"
-	"github.com/coreos/etcd/clientv3"
 	"sync"
 	"time"
+
+	"github.com/coreos/etcd/clientv3"
 )
 
 const (
@@ -43,11 +44,20 @@ type Node struct {
 
 //本节点状态
 type NodeStatus struct {
+	//节点类型
+	NodeType string `mapstructure:"nodetype" json:"nodetype" yaml:"nodetype"`
+
+	//节点Id
+	NodeId string `mapstructure:"nodeid" json:"nodeid" yaml:"nodeid"`
+
 	//节点ip地址
 	NodeAddr string `mapstructure:"nodeaddr" json:"nodeaddr" yaml:"nodeaddr"`
 
 	//探活port
 	NodePort int `mapstructure:"nodeport" json:"nodeport" yaml:"nodeport"`
+
+	//探活url
+	HeartbeatUrl string `mapstructure:"heartbeaturl" json:"heartbeaturl" yaml:"heartbeaturl"`
 
 	//是否在线
 	Online bool `mapstructure:"online" json:"online" yaml:"online"`
@@ -108,8 +118,11 @@ func (node *Node) Registry() error {
 	}
 
 	nodeStatus := &NodeStatus{
+		NodeType:       node.NodeType,
+		NodeId:         node.NodeId,
 		NodeAddr:       node.NodeAddr,
 		NodePort:       node.NodePort,
+		HeartbeatUrl:   "/health",
 		Online:         true,
 		LastReportTime: time.Now().UnixNano() / 1e6,
 	}
@@ -137,8 +150,11 @@ func (node *Node) ReportStatus(ctx context.Context, wg *sync.WaitGroup) {
 	for range node.NodeTicker.C {
 		now := time.Now().UnixNano() / 1e6
 		nodeStatus := &NodeStatus{
+			NodeType:       node.NodeType,
+			NodeId:         node.NodeId,
 			NodeAddr:       node.NodeAddr,
 			NodePort:       node.NodePort,
+			HeartbeatUrl:   "/health",
 			Online:         true,
 			LastReportTime: now,
 		}

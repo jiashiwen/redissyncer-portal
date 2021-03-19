@@ -6,8 +6,11 @@ import (
 	"crypto/md5"
 	"encoding/json"
 	"fmt"
+	"redissyncer-portal/commons"
 	"redissyncer-portal/core"
 	"redissyncer-portal/global"
+	"redissyncer-portal/node"
+	"redissyncer-portal/utils"
 	"strconv"
 	"sync"
 	"testing"
@@ -85,15 +88,14 @@ func TestGenEtcdData(t *testing.T) {
 
 		for i := 0; i < k; i++ {
 			kv.Txn(context.TODO()).Then(
-
 				//put NodesRedissyncer
 				clientv3.OpPut(global.NodeTypeRedissyncer+strconv.Itoa(i), "{}"),
 				//put TasksTaskId
-				clientv3.OpPut(global.TasksTaskidPrefix+v+strconv.Itoa(i), "{}"),
+				clientv3.OpPut(global.TasksTaskIDPrefix+v+strconv.Itoa(i), "{}"),
 				//put  TasksNode
 				clientv3.OpPut(global.TasksNodePrefix+strconv.Itoa(k)+"/"+v+strconv.Itoa(i), "{}"),
 				//put TasksGroupId
-				clientv3.OpPut(global.TasksGroupidPrefix+v+strconv.Itoa(i), v+strconv.Itoa(i)),
+				clientv3.OpPut(global.TasksGroupIDPrefix+v+strconv.Itoa(i), v+strconv.Itoa(i)),
 				//put TasksName
 				clientv3.OpPut(global.TasksNamePrefix+v+strconv.Itoa(i), v+strconv.Itoa(i)),
 				//put TasksStatus
@@ -129,12 +131,91 @@ func TestParseStatusToStruct(t *testing.T) {
 
 func TestGenTaskDataForEtcd(t *testing.T) {
 
-	GenTaskStatusData("abc")
+	global.RSPViper = core.Viper()
+	global.RSPLog = core.Zap()
+
+	etcdClient := global.GetEtcdClient()
+	defer etcdClient.Close()
+	kv := clientv3.NewKV(etcdClient)
+
+	nameSeed := commons.RandString(4)
+
+	for i := 0; i < 5; i++ {
+		taskstatus := GenTaskStatusData(nameSeed + strconv.Itoa(i))
+		taskstatus.NodeID = strconv.Itoa(i)
+		nodeskey := global.NodesPrefix + global.NodeTypeRedissyncer + "/" + strconv.Itoa(i)
+		nodestatus := node.NodeStatus{
+			//节点类型
+			NodeType: global.NodeTypeRedissyncer,
+
+			//节点Id
+			NodeId: strconv.Itoa(i),
+
+			//节点ip地址
+			NodeAddr: "127.0.0.1",
+
+			//探活port
+			NodePort: 8888,
+
+			//探活url
+			HeartbeatUrl: "/health",
+
+			//是否在线
+			Online: true,
+
+			//最后上报时间，unix时间戳
+			LastReportTime: 1615791131672,
+		}
+		nodestatusval, _ := json.Marshal(nodestatus)
+
+		tasksTaskidKey := global.TasksTaskIDPrefix + taskstatus.TaskID
+		tasksTaskidVal, _ := json.Marshal(taskstatus)
+		tasksGroupidkey := global.TasksGroupIDPrefix + taskstatus.GroupID + "/" + taskstatus.TaskID
+		tasksGroupidMap := map[string]string{"groupId": taskstatus.GroupID, "taskId": taskstatus.TaskID}
+		tasksGroupidJSON, _ := json.Marshal(tasksGroupidMap)
+		tasksStatuskey := global.TasksStatusPrefix + strconv.Itoa(taskstatus.Status) + "/" + taskstatus.TaskID
+		tasksStatusVal := map[string]string{"taskId": taskstatus.TaskID}
+		tasksStatusJSON, _ := json.Marshal(tasksStatusVal)
+		tasksNameKey := global.TasksNamePrefix + taskstatus.TaskName
+		// tasksOffsetKey := global.TasksOffsetPrefix + taskstatus.TaskID
+		// tasksOffsetVal := global.TasksOffset{ReplID: taskstatus.ReplID, ReplOffset: 11223344}
+		// tasksOffsetJSON, _ := json.Marshal(tasksOffsetVal)
+		tasksNodeKey := global.TasksNodePrefix + strconv.Itoa(i) + "/" + taskstatus.TaskID
+		tasksNodeVal := map[string]string{"nodeId": strconv.Itoa(i), "taskId": taskstatus.TaskID}
+		tasksNodeJSON, _ := json.Marshal(tasksNodeVal)
+		tasksMD5Key := global.TasksMd5Prefix + taskstatus.MD5
+		tasksMD5Val := map[string]string{
+			"groupId": taskstatus.GroupID, "nodeId": strconv.Itoa(i), "taskId": taskstatus.TaskID,
+		}
+		tasksMD5JSON, _ := json.Marshal(tasksMD5Val)
+		kv.Txn(context.TODO()).Then(
+			//put TasksTaskId
+			clientv3.OpPut(tasksTaskidKey, string(tasksTaskidVal)),
+			//put  TasksNode
+			clientv3.OpPut(tasksNodeKey, string(tasksNodeJSON)),
+			//put TasksGroupId
+			clientv3.OpPut(tasksGroupidkey, string(tasksGroupidJSON)),
+			//put TasksName
+			clientv3.OpPut(tasksNameKey, string(tasksStatusJSON)),
+			//put TasksStatus
+			clientv3.OpPut(tasksStatuskey, string(tasksStatusJSON)),
+			//put TasksMD5
+			clientv3.OpPut(tasksMD5Key, string(tasksMD5JSON)),
+			//put NodesRedissyncer
+			clientv3.OpPut(nodeskey, string(nodestatusval)),
+		).Commit()
+
+	}
+
 }
 
 func GenTaskStatusData(taskname string) *global.TaskStatus {
 	taskid := uuid.Must(uuid.NewV4(), nil)
 
+	sourceip := utils.RandomIp()
+	targetip := utils.RandomIp()
+	targeturi := []string{}
+	targeturi = append(targeturi, "redis://"+targetip+":6379")
 	taskStatus := global.TaskStatus{
 		Afresh:             true,
 		AllKeyCount:        286,
@@ -160,22 +241,22 @@ func GenTaskStatusData(taskname string) *global.TaskStatus {
 		RedisVersion:       3.2,
 		ReplID:             "5dea6a394f214eb29e3da2d282c5c744a06d8fe8",
 		SourceACL:          false,
-		SourceHost:         "116.196.82.161",
+		SourceHost:         sourceip,
 		SourcePassword:     "redistest0102",
 		SourcePort:         6379,
-		SourceRedisAddress: "116.196.82.161:6379",
+		SourceRedisAddress: sourceip + ":6379",
 		SourceRedisType:    1,
-		SourceURI:          "redis://116.196.82.161:6379?authPassword=redistest0102",
+		SourceURI:          "redis://" + sourceip + ":6379?authPassword=redistest0102",
 		SourceUserName:     "",
-		Status:             6,
+		Status:             int(global.TaskStatusTypeRDBRUNING),
 		SyncType:           1,
 		TargetACL:          false,
-		TargetHost:         "127.0.0.1",
+		TargetHost:         targetip,
 		TargetPassword:     "",
 		TargetPort:         6379,
-		TargetRedisAddress: "127.0.0.1:6379",
+		TargetRedisAddress: targetip + ":6379",
 		TargetRedisType:    1,
-		TargetURI:          []string{"redis://127.0.0.1:6379"},
+		TargetURI:          targeturi,
 		TargetUserName:     "",
 		TaskID:             taskid.String(),
 		TaskMsg:            "全量同步开始[同步任务启动]",
@@ -184,10 +265,6 @@ func GenTaskStatusData(taskname string) *global.TaskStatus {
 		TimeDeviation:      0,
 	}
 	taskStatus.MD5 = GetTaskMd5(&taskStatus)
-	fmt.Println()
-	fmt.Println(taskStatus.Status == 0)
-	fmt.Printf("%+v", taskStatus)
-
 	return &taskStatus
 
 }

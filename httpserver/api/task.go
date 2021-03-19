@@ -19,13 +19,13 @@ func TaskCreate(c *gin.Context) {
 		global.RSPLog.Sugar().Error(err)
 	}
 
-	global.RSPLog.Sugar().Debug(string(body))
-
-	if err := service.CreateTask(string(body)); err != nil {
+	resp, err := service.CreateTask(string(body))
+	if err != nil {
 		response.FailWithMessage(err.Error(), c)
+		// return
 	}
 
 	// c.JSON(http.StatusOK, body)
-	c.Data(http.StatusOK, "application/json", body)
+	c.Data(http.StatusOK, "application/json", []byte(resp))
 
 }

@@ -3,10 +3,12 @@ package inspection
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"redissyncer-portal/global"
 	"redissyncer-portal/httpquerry"
 	"redissyncer-portal/node"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -103,13 +105,16 @@ func (ict *Inspector) WatchInspectLastTime(ctx context.Context, wg *sync.WaitGro
 
 	for {
 		select {
-		case resp, _ := <-rch:
-			for _, ev := range resp.Events {
-				if string(ev.Kv.Key) == LastInspectionTime {
-					global.RSPLog.Sugar().Debugf("Type: %s Key:%s Value:%s\n", ev.Type, ev.Kv.Key, ev.Kv.Value)
-					ict.SetExecStatus(false)
-				}
-			}
+		// case resp, _ := <-rch:
+		// 	for _, ev := range resp.Events {
+		// 		if string(ev.Kv.Key) == LastInspectionTime {
+		// 			global.RSPLog.Sugar().Debugf("Type: %s Key:%s Value:%s\n", ev.Type, ev.Kv.Key, ev.Kv.Value)
+		// 			ict.SetExecStatus(false)
+		// 		}
+		// 	}
+		case <-rch:
+			ict.SetExecStatus(false)
+			global.RSPLog.Sugar().Debug("recive watch key event")
 		case <-ctx.Done():
 			return
 		}
@@ -125,7 +130,7 @@ func (ict *Inspector) CheckExecStatus(ctx context.Context, wg *sync.WaitGroup) {
 		case <-ctx.Done():
 			return
 		default:
-			if ict.ExecStatus == true {
+			if ict.ExecStatus {
 				unixNano := strconv.FormatInt(time.Now().UnixNano(), 10)
 				if _, err := ict.EtcdClient.Put(context.Background(), LastInspectionTime, unixNano); err != nil {
 					global.RSPLog.Sugar().Error(err)
@@ -171,22 +176,24 @@ func (ict *Inspector) execInspect() {
 //节点健康检查
 //取LastReportTime字段，与当前时间戳对比若差值大于阈值则说明节点可能离线，检查节点health情况若宕机则改写Online为false
 func (ict *Inspector) nodeHealthCheck() error {
-	getResp, err := ict.EtcdClient.Get(context.Background(), "/nodes", clientv3.WithPrefix())
-
+	getResp, err := ict.EtcdClient.Get(context.Background(), global.NodesPrefix, clientv3.WithPrefix())
 	if err != nil {
 		return err
 	}
-	var nodeStatus node.NodeStatus
+
 	for _, v := range getResp.Kvs {
-		if err := json.Unmarshal([]byte(v.Value), &nodeStatus); err != nil {
-			return err
+		var nodeStatus node.NodeStatus
+		if err := json.Unmarshal(v.Value, &nodeStatus); err != nil {
+			global.RSPLog.Sugar().Error(err)
+			continue
 		}
-		//ToDo 健康检查逻辑
+
 		//本地时间戳（毫秒）
 		localUnixTimestamp := time.Now().UnixNano() / 1e6
+		//本地时间戳与最后一次报告时间相差大于10秒时启动巡检
 		if localUnixTimestamp-nodeStatus.LastReportTime > 10000 {
-			if nodeStatus.Online == false {
-				return nil
+			if !nodeStatus.Online {
+				continue
 			}
 			//执行探活,若确定node离线则修改node online属性为false
 			if !httpquerry.NodeAlive(nodeStatus.NodeAddr, strconv.Itoa(nodeStatus.NodePort)) {
@@ -194,14 +201,78 @@ func (ict *Inspector) nodeHealthCheck() error {
 				statusJSON, err := json.Marshal(&nodeStatus)
 				if err != nil {
 					global.RSPLog.Sugar().Error(err)
-					return err
+					continue
 				}
 				if _, err := global.GetEtcdClient().Put(context.Background(), string(v.Key), string(statusJSON)); err != nil {
 					global.RSPLog.Sugar().Error(err)
-					return err
+					continue
 				}
+
+				//将服务器所在任务状态设置为broken
+				ict.changeNodesTasksStatus(nodeStatus.NodeId, global.TaskStatusTypeBROKEN)
 			}
 		}
 	}
 	return nil
+}
+
+//变更任务状态
+func (ict *Inspector) changeNodesTasksStatus(nodeID string, status global.TaskStatusType) error {
+
+	kv := clientv3.NewKV(ict.EtcdClient)
+	getResp, err := ict.EtcdClient.Get(context.Background(), global.TasksNodePrefix+nodeID, clientv3.WithPrefix())
+	if err != nil {
+		return err
+	}
+	for _, v := range getResp.Kvs {
+		//获取taskstatus并修改状态
+		var taskstatus global.TaskStatus
+		getResp, err := ict.EtcdClient.Get(context.Background(), global.TasksTaskIDPrefix+strings.Split(string(v.Key), "/")[4])
+		if err != nil {
+			global.RSPLog.Sugar().Error(err)
+		}
+
+		if len(getResp.Kvs) == 0 {
+			global.RSPLog.Sugar().Error(errors.New("no such key"))
+			continue
+		}
+
+		if err := json.Unmarshal(getResp.Kvs[0].Value, &taskstatus); err != nil {
+			global.RSPLog.Sugar().Error(err)
+			continue
+		}
+		currentstatus := taskstatus.Status
+		taskstatus.Status = int(status)
+		taskidval := global.TaskIDVal{
+			TaskID: taskstatus.TaskID,
+		}
+		statusJSON, err := json.Marshal(taskstatus)
+		if err != nil {
+			global.RSPLog.Sugar().Error(err)
+			continue
+		}
+
+		taskidvalJSON, err := json.Marshal(taskidval)
+		if err != nil {
+			global.RSPLog.Sugar().Error(err)
+			continue
+		}
+
+		global.RSPLog.Sugar().Debug(strings.Split(string(v.Key), "/")[4])
+
+		kv.Txn(context.TODO()).Then(
+
+			//del TasksStatus key
+			clientv3.OpDelete(global.TasksStatusPrefix+strconv.Itoa(currentstatus)+"/"+taskstatus.TaskID),
+
+			// put TasksTaskId
+			clientv3.OpPut(global.TasksTaskIDPrefix+taskstatus.TaskID, string(statusJSON)),
+
+			//put Task current status key
+			clientv3.OpPut(global.TasksStatusPrefix+strconv.Itoa(taskstatus.Status)+"/"+taskstatus.TaskID, string(taskidvalJSON)),
+		).Commit()
+
+	}
+	return nil
+
 }
