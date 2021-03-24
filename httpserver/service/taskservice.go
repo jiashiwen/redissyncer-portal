@@ -6,6 +6,8 @@ import (
 	"errors"
 	"redissyncer-portal/global"
 	"redissyncer-portal/httpquerry"
+	"redissyncer-portal/httpserver/model"
+	"redissyncer-portal/httpserver/model/response"
 	"redissyncer-portal/node"
 	"strconv"
 	"strings"
@@ -28,14 +30,14 @@ func CreateTask(body string) (string, error) {
 	// 按顺序检查节点可用后发送创建任务请求，若第一个节点不可以，顺序执行第二节点
 	for _, v := range *pairelist {
 		//获取节点ip、port
-		getresp, err := global.GetEtcdClient().Get(context.Background(), global.NodesPrefix+global.NodeTypeRedissyncer+"/"+v.Key)
+		getResp, err := global.GetEtcdClient().Get(context.Background(), global.NodesPrefix+global.NodeTypeRedissyncer+"/"+v.Key)
 		if err != nil {
 			global.RSPLog.Sugar().Error(err)
 			continue
 		}
 
 		var node node.Node
-		json.Unmarshal(getresp.Kvs[0].Value, &node)
+		json.Unmarshal(getResp.Kvs[0].Value, &node)
 
 		if httpquerry.NodeAlive(node.NodeAddr, strconv.Itoa(node.NodePort)) {
 			//向选中的redissyncer-server发送创建任务请求
@@ -51,15 +53,114 @@ func CreateTask(body string) (string, error) {
 }
 
 //Start task
-func StartTask(body string) (string, error) {
+func StartTask(body model.TaskStartBody) (string, error) {
 
-	return "", nil
+	var taskStatus global.TaskStatus
+	//通过taskID 获取TaskStatus
+	statusResp, err := global.GetEtcdClient().Get(context.Background(), global.TasksTaskIDPrefix+body.TaskID)
+	if err != nil {
+		global.RSPLog.Sugar().Debug(err)
+		return "", err
+	}
+
+	//判断taskid是否存在
+	if len(statusResp.Kvs) == 0 {
+		return "", errors.New("taskid not exists")
+	}
+
+	//判断任务是否为停止状态
+	json.Unmarshal(statusResp.Kvs[0].Value, &taskStatus)
+	if taskStatus.Status != int(global.TaskStatusTypeSTOP) &&
+		taskStatus.Status != int(global.TaskStatusTypeBROKEN) &&
+		taskStatus.Status != int(global.TaskStatusTypeFINISH) {
+		return "", errors.New("task is running")
+
+	}
+
+	//获取节点ip、port
+	nodeResp, err := global.GetEtcdClient().Get(context.Background(), global.NodesPrefix+global.NodeTypeRedissyncer+"/"+taskStatus.NodeID)
+	if err != nil {
+		global.RSPLog.Sugar().Error(err)
+		//return "", errors.New("node not exist")
+		return "", err
+	}
+
+	if len(nodeResp.Kvs) == 0 {
+		return "", errors.New("node not exist")
+	}
+
+	var node node.NodeStatus
+	json.Unmarshal(nodeResp.Kvs[0].Value, &node)
+
+	bodyJSON, err := json.Marshal(body)
+	if err != nil {
+		global.RSPLog.Sugar().Error(err)
+		return "", err
+	}
+
+	//拼装httpqurerry
+	req := httpquerry.New("http://" + node.NodeAddr + ":" + strconv.Itoa(node.NodePort))
+	req.Api = httpquerry.UrlStartTask
+	req.Body = string(bodyJSON)
+
+	return req.ExecRequest()
 
 }
 
 //Stop task by task ids
-func StopTaskByIds(ids []string) (string, error) {
-	return "", nil
+func StopTaskById(taskID string) (string, error) {
+	var taskStatus global.TaskStatus
+	//通过taskID 获取TaskStatus
+	statusResp, err := global.GetEtcdClient().Get(context.Background(), global.TasksTaskIDPrefix+taskID)
+	if err != nil {
+		global.RSPLog.Sugar().Debug(err)
+		return "", err
+	}
+
+	//判断taskid是否存在
+	if len(statusResp.Kvs) == 0 {
+		return "", errors.New("taskid not exists")
+	}
+
+	//判断任务是否为停止状态
+	json.Unmarshal(statusResp.Kvs[0].Value, &taskStatus)
+	if taskStatus.Status == int(global.TaskStatusTypeSTOP) ||
+		taskStatus.Status == int(global.TaskStatusTypeBROKEN) ||
+		taskStatus.Status == int(global.TaskStatusTypeFINISH) {
+		return "", errors.New("task is stopped")
+
+	}
+
+	//获取节点ip、port
+	nodeResp, err := global.GetEtcdClient().Get(context.Background(), global.NodesPrefix+global.NodeTypeRedissyncer+"/"+taskStatus.NodeID)
+	if err != nil {
+		global.RSPLog.Sugar().Error(err)
+		return "", err
+	}
+
+	if len(nodeResp.Kvs) == 0 {
+		return "", errors.New("node not exist")
+	}
+
+	var node node.NodeStatus
+	taskStopBody := model.TaskStopBodyToNode{
+		TaskIDs: []string{taskStatus.TaskID},
+	}
+	json.Unmarshal(nodeResp.Kvs[0].Value, &node)
+
+	bodyJSON, err := json.Marshal(taskStopBody)
+	if err != nil {
+		global.RSPLog.Sugar().Error(err)
+		return "", err
+	}
+
+	//拼装httpqurerry
+	req := httpquerry.New("http://" + node.NodeAddr + ":" + strconv.Itoa(node.NodePort))
+	req.Api = httpquerry.UrlStopTask
+	req.Body = string(bodyJSON)
+
+	return req.ExecRequest()
+
 }
 
 //RemoveTasks
@@ -128,67 +229,200 @@ func RemoveTaskByName(taskName string) (string, error) {
 
 }
 
-// GetTaskStatus 获取同步任务状态
-func GetTaskStatus(ids []string) ([]*global.TaskStatus, error) {
-	var tasksStatus []*global.TaskStatus
+//获取任务状态
+func GetTaskStatus(id string) (*global.TaskStatus, error) {
+
+	resp, err := global.GetEtcdClient().Get(context.Background(), global.TasksTaskIDPrefix+id)
+	if err != nil {
+		global.RSPLog.Sugar().Error(err)
+		return nil, err
+	}
+	if len(resp.Kvs) == 0 {
+		err := errors.New("task not exist")
+		global.RSPLog.Sugar().Error(err)
+		return nil, err
+	}
+
+	taskStatus := global.TaskStatus{}
+	json.Unmarshal(resp.Kvs[0].Value, &taskStatus)
+
+	return &taskStatus, nil
+}
+
+// GetTaskStatusByIDs 获取同步任务状态
+func GetTaskStatusByIDs(ids []string) []*response.TaskStatusResult {
+	var taskStatusResultArray []*response.TaskStatusResult
 	for _, id := range ids {
 		resp, err := global.GetEtcdClient().Get(context.Background(), global.TasksTaskIDPrefix+id)
 		if err != nil {
-			global.RSPLog.Sugar().Error(err)
-			return nil, err
-		}
-		if len(resp.Kvs) > 0 {
-			for _, v := range resp.Kvs {
-				taskStatus := global.TaskStatus{}
-				json.Unmarshal(v.Value, &taskStatus)
-				tasksStatus = append(tasksStatus, &taskStatus)
+			errorResult := response.ErrorResult{
+				Code: global.ErrorSystemError,
+				Msg:  err.Error(),
 			}
+			taskStatusResult := response.TaskStatusResult{
+				TaskID:     id,
+				Errors:     &errorResult,
+				TaskStatus: nil,
+			}
+			taskStatusResultArray = append(taskStatusResultArray, &taskStatusResult)
+			global.RSPLog.Sugar().Error(err)
+			continue
 		}
+
+		if len(resp.Kvs) == 0 {
+			errorResult := response.ErrorResult{
+				Code: global.ErrorTaskNotExists,
+				Msg:  global.ErrorTaskNotExists.String(),
+			}
+			taskStatusResult := response.TaskStatusResult{
+				TaskID:     id,
+				Errors:     &errorResult,
+				TaskStatus: nil,
+			}
+			taskStatusResultArray = append(taskStatusResultArray, &taskStatusResult)
+			continue
+		}
+
+		taskStatus := global.TaskStatus{}
+
+		if err := json.Unmarshal(resp.Kvs[0].Value, &taskStatus); err != nil {
+			errorResult := response.ErrorResult{
+				Code: global.ErrorSystemError,
+				Msg:  err.Error(),
+			}
+			taskStatusResult := response.TaskStatusResult{
+				TaskID:     id,
+				Errors:     &errorResult,
+				TaskStatus: nil,
+			}
+			taskStatusResultArray = append(taskStatusResultArray, &taskStatusResult)
+			global.RSPLog.Sugar().Error(err)
+			continue
+		}
+
+		taskStatusResult := response.TaskStatusResult{
+			TaskID:     id,
+			Errors:     nil,
+			TaskStatus: &taskStatus,
+		}
+		taskStatusResultArray = append(taskStatusResultArray, &taskStatusResult)
+
 	}
 
-	return tasksStatus, nil
+	return taskStatusResultArray
 }
 
 // GetTaskStatusByName 根据名字查找任务状态
-func GetTaskStatusByName(taskNames []string) ([]*global.TaskStatus, error) {
-
+func GetTaskStatusByName(taskNames []string) []*response.TaskStatusResultByName {
+	var taskStatusByNameArray []*response.TaskStatusResultByName
 	var taskIds []string
 	for _, name := range taskNames {
 		resp, err := global.GetEtcdClient().Get(context.Background(), global.TasksNamePrefix+name)
 		if err != nil {
-			global.RSPLog.Sugar().Error(err)
-			return nil, err
-		}
-		if len(resp.Kvs) > 0 {
-			for _, v := range resp.Kvs {
-				taskStatus := global.TaskStatus{}
-				json.Unmarshal(v.Value, &taskStatus)
-				taskIds = append(taskIds, taskStatus.TaskID)
+			errorCode := response.ErrorResult{
+				Code: global.ErrorSystemError,
+				Msg:  err.Error(),
 			}
+			taskStatusByName := response.TaskStatusResultByName{
+				TaskName:   name,
+				Errors:     &errorCode,
+				TaskStatus: nil,
+			}
+			taskStatusByNameArray = append(taskStatusByNameArray, &taskStatusByName)
+			global.RSPLog.Sugar().Error(err)
+			continue
+		}
+
+		if len(resp.Kvs) == 0 {
+			errorCode := response.ErrorResult{
+				Code: global.ErrorTaskNotExists,
+				Msg:  global.ErrorTaskNotExists.String(),
+			}
+			taskStatusByName := response.TaskStatusResultByName{
+				TaskName:   name,
+				Errors:     &errorCode,
+				TaskStatus: nil,
+			}
+			taskStatusByNameArray = append(taskStatusByNameArray, &taskStatusByName)
+			continue
+		}
+
+		for _, v := range resp.Kvs {
+			taskStatus := global.TaskStatus{}
+			json.Unmarshal(v.Value, &taskStatus)
+			taskIds = append(taskIds, taskStatus.TaskID)
 		}
 	}
 
-	return GetTaskStatus(taskIds)
+	for _, v := range GetTaskStatusByIDs(taskIds) {
+		taskStatusByName := response.TaskStatusResultByName{
+			TaskName:   v.TaskStatus.TaskName,
+			Errors:     v.Errors,
+			TaskStatus: v.TaskStatus,
+		}
+		taskStatusByNameArray = append(taskStatusByNameArray, &taskStatusByName)
+	}
+	return taskStatusByNameArray
 }
 
-// GetTaskStatusByGroupID 根据groupid获取任务状态
-func GetTaskStatusByGroupID(groupIDs []string) ([]*global.TaskStatus, error) {
-	taskIDsArry := []string{}
+// GetTaskStatusByGroupIDs 根据groupid获取任务状态
+func GetTaskStatusByGroupIDs(groupIDs []string) []*response.TaskStatusResultByGroupID {
+	var taskStatusResultByGroupIDArray []*response.TaskStatusResultByGroupID
+	var groupIDTaskIDMap map[string][]string
 	for _, groupID := range groupIDs {
 		resp, err := global.GetEtcdClient().Get(context.Background(), global.TasksGroupIDPrefix+groupID, clientv3.WithPrefix())
 		if err != nil {
-			global.RSPLog.Sugar().Error(err)
-			return nil, err
-		}
-		if len(resp.Kvs) > 0 {
-			for _, v := range resp.Kvs {
-				taskIDsArry = append(taskIDsArry, strings.Split(string(v.Key), "/")[4])
+			errorCode := response.ErrorResult{
+				Code: global.ErrorSystemError,
+				Msg:  err.Error(),
 			}
+			taskStatusResultByGroupID := response.TaskStatusResultByGroupID{
+				GroupID:         groupID,
+				Errors:          &errorCode,
+				TaskStatusArray: nil,
+			}
+			taskStatusResultByGroupIDArray = append(taskStatusResultByGroupIDArray, &taskStatusResultByGroupID)
+			global.RSPLog.Sugar().Error(err)
+			continue
 		}
 
+		if len(resp.Kvs) == 0 {
+			errorCode := response.ErrorResult{
+				Code: global.ErrorTaskGroupNotExists,
+				Msg:  global.ErrorTaskGroupNotExists.String(),
+			}
+			taskStatusResultByGroupID := response.TaskStatusResultByGroupID{
+				GroupID:         groupID,
+				Errors:          &errorCode,
+				TaskStatusArray: nil,
+			}
+			taskStatusResultByGroupIDArray = append(taskStatusResultByGroupIDArray, &taskStatusResultByGroupID)
+			global.RSPLog.Sugar().Error(err)
+			continue
+		}
+		var taskIDsArray []string
+		for _, v := range resp.Kvs {
+			taskIDsArray = append(taskIDsArray, strings.Split(string(v.Key), "/")[4])
+		}
+
+		groupIDTaskIDMap[groupID] = taskIDsArray
 	}
 
-	return GetTaskStatus(taskIDsArry)
+	for k, v := range groupIDTaskIDMap {
+		taskStatusByGroupID := response.TaskStatusResultByGroupID{
+			GroupID:         k,
+			Errors:          nil,
+			TaskStatusArray: GetTaskStatusByIDs(v),
+		}
+		taskStatusResultByGroupIDArray = append(taskStatusResultByGroupIDArray, &taskStatusByGroupID)
+
+	}
+	return taskStatusResultByGroupIDArray
+}
+
+func GetAllTaskStatus(queryid string) []*global.TaskStatus {
+	
+	return nil
 }
 
 // @title    GetSameTaskNameIds

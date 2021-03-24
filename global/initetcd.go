@@ -10,16 +10,15 @@ var (
 
 // 初始化etcdClient
 func InitEtcd() {
+	var initerr error
 	//初始化etcdclient
 	var etcdCfg clientv3.Config
-	err := RSPViper.UnmarshalKey("etcd", &etcdCfg)
-
-	if err != nil {
+	if err := RSPViper.UnmarshalKey("etcd", &etcdCfg); err != nil {
 		panic(err)
 	}
 
-	etcdClient, err = clientv3.New(etcdCfg)
-	if err != nil {
-		panic(err)
+	etcdClient, initerr = clientv3.New(etcdCfg)
+	if initerr != nil {
+		panic(initerr)
 	}
 }

@@ -16,7 +16,7 @@ default:
 	@go mod vendor
 	@CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags '-w -s' -o target/${BINARY}-${VERSION}-${LINUX}
 	@CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -ldflags '-w -s' -o target/${BINARY}-${VERSION}-${DARWIN}
-	@CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -ldflags '-w -s' -o target/${BINARY}-${VERSION}-${WIN}.exe
+#	@CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -ldflags '-w -s' -o target/${BINARY}-${VERSION}-${WIN}.exe
 	@echo "build finished,please check target directory"
 
 linux:
@@ -62,7 +62,7 @@ help:
 	@echo "make - 格式化 Go 代码, 并编译生成二进制文件"
 	@echo "make linux - 编译 Go 代码, 生成linux平台二进制文件"
 	@echo "make darwin - 编译 Go 代码, 生成mac平台二进制文件"
-	@echo "make windows - 编译 Go 代码, 生成windows平台二进制文件"
+#	@echo "make windows - 编译 Go 代码, 生成windows平台二进制文件"
 	@echo "make clean - 移除二进制文件和 vim swap files"
 
 

@@ -274,5 +274,6 @@ func (ict *Inspector) changeNodesTasksStatus(nodeID string, status global.TaskSt
 
 	}
 	return nil
-
 }
+
+//任务迁移，将宕机节点上的任务迁移到健康节点

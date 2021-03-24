@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"redissyncer-portal/global"
+	"redissyncer-portal/httpserver/model"
 	"redissyncer-portal/httpserver/model/response"
 	"redissyncer-portal/httpserver/service"
 
@@ -28,4 +29,94 @@ func TaskCreate(c *gin.Context) {
 	// c.JSON(http.StatusOK, body)
 	c.Data(http.StatusOK, "application/json", []byte(resp))
 
+}
+
+func TaskStop(c *gin.Context) {
+	var stopJSON model.TaskIDBody
+	if err := c.ShouldBindJSON(&stopJSON); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	resp, err := service.StopTaskById(stopJSON.TaskID)
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+	}
+	c.Data(http.StatusOK, "application/json", []byte(resp))
+}
+
+func TaskRemove(c *gin.Context) {
+	var removeJSON model.TaskIDBody
+	if err := c.ShouldBindJSON(&removeJSON); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	if err := service.RemoveTask(removeJSON.TaskID); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	//c.Data(http.StatusOK, "application/json", []byte(response.Ok()))
+	response.Ok(c)
+}
+
+// TaskListAll 列出集群中的所有任务
+func TaskListAll(c *gin.Context) {
+	status := global.TaskStatus{}
+
+	statusResult := response.TaskStatusResult{
+		TaskID:     "aaaaa",
+		Errors:     nil,
+		TaskStatus: &status,
+	}
+
+	c.JSON(http.StatusOK, statusResult)
+}
+
+func TaskListByIDs(c *gin.Context) {
+	var taskIDsJSON model.TaskListByTaskIDs
+
+	if err := c.ShouldBindJSON(&taskIDsJSON); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	resp := service.GetTaskStatusByIDs(taskIDsJSON.TaskIDs)
+	c.JSON(http.StatusOK, resp)
+	//c.Data(http.StatusOK, "application/json", []byte(resp))
+}
+
+func TaskListByNames(c *gin.Context) {
+	var namesJSON model.TaskListByTaskNames
+
+	if err := c.ShouldBindJSON(&namesJSON); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	resp := service.GetTaskStatusByName(namesJSON.TaskNames)
+	c.JSON(http.StatusOK, resp)
+
+}
+
+func TaskListByGroupIDs(c *gin.Context) {
+	var groupIDsJSON model.TaskListByGroupIDs
+
+	if err := c.ShouldBindJSON(&groupIDsJSON); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	resp := service.GetTaskStatusByGroupIDs(groupIDsJSON.GroupIDs)
+	c.JSON(http.StatusOK, resp)
 }

@@ -20,10 +20,13 @@ func InitBaseRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
 func InitTaskRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
 	TaskRouter := Router.Group("task")
 	{
-
-		TaskRouter.GET("create", api.TaskCreate)
 		TaskRouter.POST("create", api.TaskCreate)
-
+		TaskRouter.POST("stop", api.TaskStop)
+		TaskRouter.POST("remove", api.TaskRemove)
+		TaskRouter.POST("listbyids", api.TaskListByIDs)
+		TaskRouter.POST("listbynames", api.TaskListByNames)
+		TaskRouter.POST("listbygroupids", api.TaskListByGroupIDs)
+		TaskRouter.POST("listall", api.TaskListAll)
 	}
 
 	return TaskRouter

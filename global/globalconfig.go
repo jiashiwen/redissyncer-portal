@@ -23,12 +23,20 @@ func GetEtcdClient() *clientv3.Client {
 	return etcdClient
 }
 
+//获取queryIDMap
+//func GetQueryIDMap() *map[string]*CurrentFullQuery {
+//	once.Do(func() {
+//		InitQueryIDMap()
+//	})
+//	return &queryIDMap
+//}
+
 //获取node information
 func GetNodeInfo() *config.NodeInfo {
-	var nodeinfo config.NodeInfo
-	err := RSPViper.UnmarshalKey("node", &nodeinfo)
+	var nodeInfo config.NodeInfo
+	err := RSPViper.UnmarshalKey("node", &nodeInfo)
 	if err != nil {
 		panic(err)
 	}
-	return &nodeinfo
+	return &nodeInfo
 }

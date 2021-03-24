@@ -85,7 +85,7 @@ func TestGetTaskStatusByGroupID(t *testing.T) {
 
 	t.Log(groupids)
 
-	taskstatusArry, err := GetTaskStatusByGroupID(groupids)
+	taskstatusArry, err := GetTaskStatusByGroupIDs(groupids)
 
 	if err != nil {
 		t.Error(err)
@@ -116,7 +116,7 @@ func TestGetTaskStatus(t *testing.T) {
 
 	t.Log(ids)
 
-	taskstatusArry, err := GetTaskStatus(ids)
+	taskstatusArry, err := GetTaskStatusByIDs(ids)
 
 	if err != nil {
 		t.Error(err)
