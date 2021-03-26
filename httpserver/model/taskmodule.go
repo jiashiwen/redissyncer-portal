@@ -31,5 +31,7 @@ type TaskListByTaskNames struct {
 }
 
 type TaskListAll struct {
-	QueryID string `maps:"queryID" json:"queryID" yaml:"queryID"`
+	QueryID   string `maps:"queryID" json:"queryID" yaml:"queryID"`
+	BatchSize int64  `maps:"batchSize" json:"batchSize" yaml:"batchSize"`
+	KeyPrefix string `maps:"keyPrefix" json:"keyPrefix" yaml:"keyPrefix"`
 }

@@ -23,14 +23,6 @@ func GetEtcdClient() *clientv3.Client {
 	return etcdClient
 }
 
-//获取queryIDMap
-//func GetQueryIDMap() *map[string]*CurrentFullQuery {
-//	once.Do(func() {
-//		InitQueryIDMap()
-//	})
-//	return &queryIDMap
-//}
-
 //获取node information
 func GetNodeInfo() *config.NodeInfo {
 	var nodeInfo config.NodeInfo

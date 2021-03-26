@@ -4,6 +4,7 @@ type ErrorCode int
 
 const (
 	ErrorSystemError        ErrorCode = 10001
+	ErrorCursorFinished     ErrorCode = 20001
 	ErrorNodeNotExists      ErrorCode = 40001
 	ErrorTaskNotExists      ErrorCode = 50001
 	ErrorTaskGroupNotExists ErrorCode = 50002
@@ -11,6 +12,8 @@ const (
 
 func (code ErrorCode) String() string {
 	switch code {
+	case 20001:
+		return "cursor query have finished"
 	case 40001:
 		return "node not exists"
 	case 50001:

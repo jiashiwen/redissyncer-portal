@@ -24,3 +24,10 @@ type TaskStatusResultByGroupID struct {
 	Errors          *ErrorResult        `map:"errors" json:"errors" yaml:"errors"`
 	TaskStatusArray []*TaskStatusResult `map:"taskStatus" json:"taskStatus" yaml:"taskStatus"`
 }
+
+type AllTaskStatusResult struct {
+	QueryID         string              `map:"queryID" json:"queryID" yaml:"queryID"`
+	LastPage        bool                `map:"lastPage" json:"lastPage" yaml:"lastPage"`
+	Errors          []*ErrorResult      `map:"errors" json:"errors" yaml:"errors"`
+	TaskStatusArray []*TaskStatusResult `map:"taskStatus" json:"taskStatus" yaml:"taskStatus"`
+}

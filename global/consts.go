@@ -18,6 +18,7 @@ const (
 	TasksBigkeyPrefix     = "/tasks/bigkey/"     //TasksBigkeyPrefix key:/tasks/bigkey/{taskId}/{bigKey};value:{"id":1,"taskId":"xxx","command":"xxx","command_type":"xxx"}
 	TasksMd5Prefix        = "/tasks/md5/"        // TasksMd5Prefix key:/tasks/md5/{md5};value:{"taskid":"xxx","groupId":"xxx","nodeId":"xx"}
 	NodesPrefix           = "/nodes/"            // NodesPrefix key:/nodes/{nodetype}/{nodeID};value:{"nodeaddr":"10.0.0.1","nodeport":8888,"online":true,"lastreporttime":1615275888064}
+	CursorPrefix          = "/cursor/"           // CursorPrefix key:/cursor/{qureryID};value:{"nodeaddr":"10.0.0.1","nodeport":8888,"online":true,"lastreporttime":1615275888064}
 
 )
 

@@ -66,15 +66,18 @@ func TaskRemove(c *gin.Context) {
 
 // TaskListAll 列出集群中的所有任务
 func TaskListAll(c *gin.Context) {
-	status := global.TaskStatus{}
+	var listAllJSON model.TaskListAll
 
-	statusResult := response.TaskStatusResult{
-		TaskID:     "aaaaa",
-		Errors:     nil,
-		TaskStatus: &status,
+	if err := c.ShouldBindJSON(&listAllJSON); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
 	}
 
-	c.JSON(http.StatusOK, statusResult)
+	all := service.GetAllTaskStatus(listAllJSON)
+
+	c.JSON(http.StatusOK, all)
 }
 
 func TaskListByIDs(c *gin.Context) {

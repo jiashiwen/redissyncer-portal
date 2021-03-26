@@ -4,11 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"redissyncer-portal/commons"
 	"redissyncer-portal/global"
 	"redissyncer-portal/httpquerry"
 	"redissyncer-portal/httpserver/model"
 	"redissyncer-portal/httpserver/model/response"
 	"redissyncer-portal/node"
+	"redissyncer-portal/resourceutils"
 	"strconv"
 	"strings"
 
@@ -420,9 +422,137 @@ func GetTaskStatusByGroupIDs(groupIDs []string) []*response.TaskStatusResultByGr
 	return taskStatusResultByGroupIDArray
 }
 
-func GetAllTaskStatus(queryid string) []*global.TaskStatus {
-	
-	return nil
+//以游标方式返回查询数据
+//若queryid 为 "" 生成新的queryid 和查询游标
+//先检查本地queryIDMap里是否有相关id映射，若有直接返回，若没有查看/cursor/{queryID} 查询query所在位置，然后转发请
+func GetAllTaskStatus(model model.TaskListAll) response.AllTaskStatusResult {
+
+	// ToDo 简化重复代码
+	var result response.AllTaskStatusResult
+	var taskStatusArray []*response.TaskStatusResult
+	var cursor *resourceutils.EtcdCursor
+
+	// 首次查询
+	if model.QueryID == "" {
+		var err error
+		pageSize := int64(10)
+		if model.BatchSize > 0 {
+			pageSize = model.BatchSize
+		}
+		cursor, err = resourceutils.NewEtcdCursor(global.GetEtcdClient(), global.TasksTaskIDPrefix, pageSize)
+		if err != nil {
+			errResult := &response.ErrorResult{
+				Code: global.ErrorSystemError,
+				Msg:  err.Error(),
+			}
+			result.Errors = append(result.Errors, errResult)
+			return result
+		}
+	}
+
+	if model.QueryID != "" {
+		// 根据 queryID 查询
+		cursorMap := resourceutils.GetCursorQueryMap()
+		cursor = (*cursorMap)[model.QueryID]
+
+		//判断本地Map是否有cursor存在
+		if commons.IsNil(cursor) {
+			cursorNode, err := resourceutils.GetCursorNode(global.GetEtcdClient(), global.CursorPrefix+model.QueryID)
+			if err != nil {
+				errResult := response.ErrorResult{
+					Code: global.ErrorSystemError,
+					Msg:  err.Error(),
+				}
+				result.Errors = append(result.Errors, &errResult)
+				return result
+			}
+			//  http请求 cursor所在node 返回数据
+			req := httpquerry.New("http://" + cursorNode.NodeAddr + ":" + strconv.Itoa(cursorNode.NodePort))
+			req.Api = httpquerry.UrlListAllTasks
+			body, err := json.Marshal(model)
+			if err != nil {
+				errResult := response.ErrorResult{
+					Code: global.ErrorSystemError,
+					Msg:  err.Error(),
+				}
+				result.Errors = append(result.Errors, &errResult)
+				return result
+			}
+			req.Body = string(body)
+			resp, err := req.ExecRequest()
+			if err != nil {
+				errResult := response.ErrorResult{
+					Code: global.ErrorSystemError,
+					Msg:  err.Error(),
+				}
+				result.Errors = append(result.Errors, &errResult)
+				return result
+			}
+
+			json.Unmarshal([]byte(resp), result)
+			return result
+		}
+	}
+	if cursor.Finish() {
+		errResult := &response.ErrorResult{
+			Code: global.ErrorCursorFinished,
+			Msg:  global.ErrorCursorFinished.String(),
+		}
+		result.Errors = append(result.Errors, errResult)
+		return result
+	}
+
+	kvs, err := cursor.Next()
+	if err != nil {
+		errResult := &response.ErrorResult{
+			Code: global.ErrorSystemError,
+			Msg:  err.Error(),
+		}
+		result.Errors = append(result.Errors, errResult)
+		return result
+	}
+
+	for k, v := range kvs {
+		var taskStatusResult response.TaskStatusResult
+		var taskStatus global.TaskStatus
+		if err := json.Unmarshal(v.Value, &taskStatus); err != nil {
+			taskStatusResult.TaskID = string(k)
+			taskStatusResult.Errors = &response.ErrorResult{
+				Code: global.ErrorSystemError,
+				Msg:  err.Error(),
+			}
+			taskStatusArray = append(taskStatusArray, &taskStatusResult)
+			continue
+		}
+
+		taskStatusResult.TaskID = taskStatus.TaskID
+		taskStatusResult.TaskStatus = &taskStatus
+		taskStatusArray = append(taskStatusArray, &taskStatusResult)
+	}
+	result.QueryID = cursor.QueryID
+	result.TaskStatusArray = taskStatusArray
+
+	// 插入本地cursorMap
+	if err := cursor.RegisterToCursorMap(); err != nil {
+		errResult := response.ErrorResult{
+			Code: global.ErrorSystemError,
+			Msg:  err.Error(),
+		}
+		result.Errors = append(result.Errors, &errResult)
+	}
+
+	// 提交etcd 服务器 '/cursor/{queryid}'
+	if err := cursor.RegisterToEtcd(global.GetEtcdClient()); err != nil {
+		errResult := response.ErrorResult{
+			Code: global.ErrorSystemError,
+			Msg:  err.Error(),
+		}
+		result.Errors = append(result.Errors, &errResult)
+	}
+
+	result.LastPage = cursor.EtcdPaginte.LastPage
+
+	return result
 }
 
 // @title    GetSameTaskNameIds

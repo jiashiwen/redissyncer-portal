@@ -12,6 +12,8 @@ import (
 
 func main() {
 
+	//fmt.Println(os.Args)
+
 	global.RSPViper = core.Viper()
 	global.RSPLog = core.Zap()
 

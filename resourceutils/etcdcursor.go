@@ -4,17 +4,35 @@
 package resourceutils
 
 import (
+	"context"
+	"encoding/json"
+	"errors"
 	"github.com/coreos/etcd/clientv3"
 	"github.com/coreos/etcd/mvcc/mvccpb"
 	uuid "github.com/satori/go.uuid"
 	"redissyncer-portal/commons"
+	"redissyncer-portal/global"
+	"redissyncer-portal/node"
+	"sync"
 )
+
+var cursorQueryMap map[string]*EtcdCursor
+var once sync.Once
 
 type EtcdCursor struct {
 	QueryID            string
+	EtcdLeaseID        clientv3.LeaseID
 	EtcdPaginte        *EtcdPaginte
-	LastQueryTimeStamp int64
+	LastQueryTimeStamp int64 //unix 时间戳 毫秒
 	QueryFinish        bool
+}
+
+//获取queryIDMap
+func GetCursorQueryMap() *map[string]*EtcdCursor {
+	once.Do(func() {
+		cursorQueryMap = make(map[string]*EtcdCursor)
+	})
+	return &cursorQueryMap
 }
 
 //新建EtcdCursor
@@ -40,6 +58,61 @@ func (cursor *EtcdCursor) Next() ([]*mvccpb.KeyValue, error) {
 	}
 	cursor.LastQueryTimeStamp = commons.GetCurrentUnixMillisecond()
 	return kv, err
+}
+
+//注册到本地cursorMap
+func (cursor *EtcdCursor) RegisterToCursorMap() error {
+	cursorMap := *GetCursorQueryMap()
+	cursorMap[cursor.QueryID] = cursor
+	return nil
+}
+
+//通过queryID获得cursor指针
+func GetCursorByQueryID(queryID string) (*EtcdCursor, error) {
+	cursorMap := GetCursorQueryMap()
+	cursor := (*cursorMap)[queryID]
+	if cursor != nil {
+		return cursor, nil
+	}
+	return nil, errors.New("cursor not exists")
+}
+
+//注册到etcd
+func (cursor *EtcdCursor) RegisterToEtcd(cli *clientv3.Client) error {
+	lease := clientv3.NewLease(cli)
+	if cursor.EtcdLeaseID == 0 {
+		gResp, err := lease.Grant(context.Background(), 300)
+		if err != nil {
+			return err
+		}
+		cursor.EtcdLeaseID = gResp.ID
+		valJson, _ := json.Marshal(global.GetNodeInfo())
+		if _, err := cli.Put(context.Background(), global.CursorPrefix+cursor.QueryID, string(valJson), clientv3.WithLease(cursor.EtcdLeaseID)); err != nil {
+			return err
+		}
+	}
+
+	if _, err := lease.KeepAliveOnce(context.Background(), cursor.EtcdLeaseID); err != nil {
+		return err
+	}
+	return nil
+}
+
+//从etcd查询queryID所在节点
+func GetCursorNode(cli *clientv3.Client, queryID string) (*node.NodeStatus, error) {
+	var nodeStatus node.NodeStatus
+	resp, err := cli.Get(context.Background(), global.CursorPrefix+queryID)
+	if err != nil {
+		return nil, err
+	}
+	if len(resp.Kvs) == 0 {
+		return nil, errors.New("cursor not exists on any node")
+	}
+	if err := json.Unmarshal(resp.Kvs[0].Value, &nodeStatus); err != nil {
+		return nil, err
+	}
+	return &nodeStatus, nil
+
 }
 
 //是否已完成查询
