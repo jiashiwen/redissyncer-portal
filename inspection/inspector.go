@@ -68,7 +68,6 @@ func NewInspector() *Inspector {
 //Start 启动巡检器
 func (ict *Inspector) Start(wg *sync.WaitGroup) {
 	defer wg.Done()
-
 	defer ict.InspectorCancel()
 	global.RSPLog.Sugar().Info("Inspector start ...")
 
@@ -209,7 +208,7 @@ func (ict *Inspector) nodeHealthCheck() error {
 				}
 
 				//将服务器所在任务状态设置为broken
-				ict.changeNodesTasksStatus(nodeStatus.NodeId, global.TaskStatusTypeBROKEN)
+				ict.changeNodesTasksStatus(nodeStatus.NodeID, global.TaskStatusTypeBROKEN)
 			}
 		}
 	}

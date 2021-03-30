@@ -140,7 +140,7 @@ func TestGenTaskDataForEtcd(t *testing.T) {
 
 	nameSeed := commons.RandString(4)
 
-	for i := 0; i < 5; i++ {
+	for i := 0; i < 50; i++ {
 		taskstatus := GenTaskStatusData(nameSeed + strconv.Itoa(i))
 		taskstatus.NodeID = strconv.Itoa(i)
 		nodeskey := global.NodesPrefix + global.NodeTypeRedissyncer + "/" + strconv.Itoa(i)
@@ -149,7 +149,7 @@ func TestGenTaskDataForEtcd(t *testing.T) {
 			NodeType: global.NodeTypeRedissyncer,
 
 			//节点Id
-			NodeId: strconv.Itoa(i),
+			NodeID: strconv.Itoa(i),
 
 			//节点ip地址
 			NodeAddr: "127.0.0.1",
@@ -204,6 +204,8 @@ func TestGenTaskDataForEtcd(t *testing.T) {
 			//put NodesRedissyncer
 			clientv3.OpPut(nodeskey, string(nodestatusval)),
 		).Commit()
+
+		fmt.Println("key: ", tasksTaskidKey)
 
 	}
 

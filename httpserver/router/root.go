@@ -28,6 +28,7 @@ func RootRouter() *gin.Engine {
 		// 注册基础功能路由 不做鉴权
 		InitBaseRouter(PublicGroup)
 		InitTaskRouter(PublicGroup)
+		InitNodeRouter(PublicGroup)
 		InitDefaultRouter(PublicGroup)
 	}
 	//PrivateGroup := Router.Group("")

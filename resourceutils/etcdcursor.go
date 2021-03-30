@@ -22,6 +22,7 @@ var once sync.Once
 type EtcdCursor struct {
 	QueryID            string
 	EtcdLeaseID        clientv3.LeaseID
+	CurrentPage        int64
 	EtcdPaginte        *EtcdPaginte
 	LastQueryTimeStamp int64 //unix 时间戳 毫秒
 	QueryFinish        bool
@@ -55,7 +56,9 @@ func (cursor *EtcdCursor) Next() ([]*mvccpb.KeyValue, error) {
 	kv, err := cursor.EtcdPaginte.Next()
 	if cursor.EtcdPaginte.LastPage {
 		cursor.QueryFinish = true
+		cursor.LogoutFromCursorMap()
 	}
+	cursor.CurrentPage = cursor.EtcdPaginte.CurrentPage
 	cursor.LastQueryTimeStamp = commons.GetCurrentUnixMillisecond()
 	return kv, err
 }
@@ -65,6 +68,12 @@ func (cursor *EtcdCursor) RegisterToCursorMap() error {
 	cursorMap := *GetCursorQueryMap()
 	cursorMap[cursor.QueryID] = cursor
 	return nil
+}
+
+//从本地cursorMap注销
+func (cursor *EtcdCursor) LogoutFromCursorMap() {
+	cursorMap := *GetCursorQueryMap()
+	delete(cursorMap, cursor.QueryID)
 }
 
 //通过queryID获得cursor指针
@@ -80,6 +89,7 @@ func GetCursorByQueryID(queryID string) (*EtcdCursor, error) {
 //注册到etcd
 func (cursor *EtcdCursor) RegisterToEtcd(cli *clientv3.Client) error {
 	lease := clientv3.NewLease(cli)
+	//未注册过的cursor生成新租约注册
 	if cursor.EtcdLeaseID == 0 {
 		gResp, err := lease.Grant(context.Background(), 300)
 		if err != nil {
@@ -92,7 +102,9 @@ func (cursor *EtcdCursor) RegisterToEtcd(cli *clientv3.Client) error {
 		}
 	}
 
+	//已注册过的cursor进行续约，若续约前已过期则把EtcdLeaseID置0，待下次注册重新生成租约
 	if _, err := lease.KeepAliveOnce(context.Background(), cursor.EtcdLeaseID); err != nil {
+		cursor.EtcdLeaseID = 0
 		return err
 	}
 	return nil

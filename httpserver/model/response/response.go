@@ -3,18 +3,12 @@ package response
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"redissyncer-portal/global"
 )
 
 type Response struct {
 	Code int         `json:"code"`
 	Data interface{} `json:"data"`
 	Msg  string      `json:"msg"`
-}
-
-type ErrorResult struct {
-	Code global.ErrorCode `json:"code"`
-	Msg  string           `json:"msg"`
 }
 
 const (

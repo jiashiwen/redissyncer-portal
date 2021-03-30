@@ -225,6 +225,125 @@ func RemoveTask(taskID string) error {
 
 }
 
+//任务迁移将任务迁移至指定的节点
+func TaskMigrate(taskIDs []string, nodeType, nodeID string) error {
+	var nodeStatus node.NodeStatus
+
+	//获取节点状态
+	nodeResp, err := global.GetEtcdClient().Get(context.Background(), global.NodesPrefix+nodeType+"/"+nodeID)
+	if err != nil {
+		return &global.Error{
+			Code: global.ErrorSystemError,
+			Msg:  err.Error(),
+		}
+	}
+
+	if len(nodeResp.Kvs) == 0 {
+		return &global.Error{
+			Code: global.ErrorNodeNotExists,
+			Msg:  global.ErrorNodeNotExists.String(),
+		}
+	}
+
+	if err := json.Unmarshal(nodeResp.Kvs[0].Value, &nodeStatus); err != nil {
+		return &global.Error{
+			Code: global.ErrorSystemError,
+			Msg:  err.Error(),
+		}
+	}
+	//判断节点是否在线
+	if !nodeStatus.Online {
+		return &global.Error{
+			Code: global.ErrorNodeNotAlive,
+			Msg:  global.ErrorNodeNotAlive.String(),
+		}
+	}
+
+	for _, v := range taskIDs {
+		var taskStatus global.TaskStatus
+		resp, err := global.GetEtcdClient().Get(context.Background(), global.TasksTaskIDPrefix+v)
+		if err != nil {
+			global.RSPLog.Sugar().Error(err)
+			continue
+		}
+
+		if len(resp.Kvs) == 0 {
+			continue
+		}
+
+		if err := json.Unmarshal(resp.Kvs[0].Value, &taskStatus); err != nil {
+			global.RSPLog.Sugar().Error(err)
+			continue
+		}
+
+		oldNodeID := taskStatus.NodeID
+		taskStatus.NodeID = nodeID
+
+		tasksTypeVal := global.TasksTypeVal{
+			TaskID:  taskStatus.TaskID,
+			GroupID: taskStatus.GroupID,
+			NodeID:  nodeID,
+		}
+
+		tasksMD5Val := global.TasksMD5Val{
+			TaskID:  taskStatus.TaskID,
+			GroupID: taskStatus.GroupID,
+			NodeID:  nodeID,
+		}
+
+		tasksNodeVal := global.TasksNodeVal{
+			TaskID: taskStatus.TaskID,
+			NodeID: nodeID,
+		}
+
+		tasksTypeJSON, err := json.Marshal(tasksTypeVal)
+		if err != nil {
+			global.RSPLog.Sugar().Error(err)
+			continue
+		}
+
+		tasksMD5JSON, err := json.Marshal(tasksMD5Val)
+		if err != nil {
+			global.RSPLog.Sugar().Error(err)
+			continue
+		}
+
+		tasksNodeJSON, err := json.Marshal(tasksNodeVal)
+		if err != nil {
+			global.RSPLog.Sugar().Error(err)
+			continue
+		}
+
+		tasksStatusJSON, err := json.Marshal(taskStatus)
+		if err != nil {
+			global.RSPLog.Sugar().Error(err)
+			continue
+		}
+		//迁移任务数据
+		kv := clientv3.NewKV(global.GetEtcdClient())
+		_, err = kv.Txn(context.TODO()).Then(
+			//put TasksType
+			clientv3.OpPut(global.TasksTypePrefix+strconv.Itoa(taskStatus.TaskType)+"/"+taskStatus.TaskID, string(tasksTypeJSON)),
+			//put TasksMD5
+			clientv3.OpPut(global.TasksMd5Prefix+taskStatus.MD5, string(tasksMD5JSON)),
+			//put TasksNode
+			clientv3.OpPut(global.TasksNodePrefix+nodeID+"/"+taskStatus.TaskID, string(tasksNodeJSON)),
+			//put TasksTaskID
+			clientv3.OpPut(global.TasksTaskIDPrefix+taskStatus.TaskID, string(tasksStatusJSON)),
+			//del old TasksNode
+			clientv3.OpDelete(global.TasksNodePrefix+oldNodeID+"/"+taskStatus.TaskID),
+		).Commit()
+
+		if err != nil {
+			global.RSPLog.Sugar().Error(err)
+			continue
+		}
+
+	}
+	return nil
+
+}
+
 //Remove task by name
 func RemoveTaskByName(taskName string) (string, error) {
 	return "", nil
@@ -257,7 +376,7 @@ func GetTaskStatusByIDs(ids []string) []*response.TaskStatusResult {
 	for _, id := range ids {
 		resp, err := global.GetEtcdClient().Get(context.Background(), global.TasksTaskIDPrefix+id)
 		if err != nil {
-			errorResult := response.ErrorResult{
+			errorResult := global.Error{
 				Code: global.ErrorSystemError,
 				Msg:  err.Error(),
 			}
@@ -272,7 +391,7 @@ func GetTaskStatusByIDs(ids []string) []*response.TaskStatusResult {
 		}
 
 		if len(resp.Kvs) == 0 {
-			errorResult := response.ErrorResult{
+			errorResult := global.Error{
 				Code: global.ErrorTaskNotExists,
 				Msg:  global.ErrorTaskNotExists.String(),
 			}
@@ -288,7 +407,7 @@ func GetTaskStatusByIDs(ids []string) []*response.TaskStatusResult {
 		taskStatus := global.TaskStatus{}
 
 		if err := json.Unmarshal(resp.Kvs[0].Value, &taskStatus); err != nil {
-			errorResult := response.ErrorResult{
+			errorResult := global.Error{
 				Code: global.ErrorSystemError,
 				Msg:  err.Error(),
 			}
@@ -321,7 +440,7 @@ func GetTaskStatusByName(taskNames []string) []*response.TaskStatusResultByName 
 	for _, name := range taskNames {
 		resp, err := global.GetEtcdClient().Get(context.Background(), global.TasksNamePrefix+name)
 		if err != nil {
-			errorCode := response.ErrorResult{
+			errorCode := global.Error{
 				Code: global.ErrorSystemError,
 				Msg:  err.Error(),
 			}
@@ -336,7 +455,7 @@ func GetTaskStatusByName(taskNames []string) []*response.TaskStatusResultByName 
 		}
 
 		if len(resp.Kvs) == 0 {
-			errorCode := response.ErrorResult{
+			errorCode := global.Error{
 				Code: global.ErrorTaskNotExists,
 				Msg:  global.ErrorTaskNotExists.String(),
 			}
@@ -374,7 +493,7 @@ func GetTaskStatusByGroupIDs(groupIDs []string) []*response.TaskStatusResultByGr
 	for _, groupID := range groupIDs {
 		resp, err := global.GetEtcdClient().Get(context.Background(), global.TasksGroupIDPrefix+groupID, clientv3.WithPrefix())
 		if err != nil {
-			errorCode := response.ErrorResult{
+			errorCode := global.Error{
 				Code: global.ErrorSystemError,
 				Msg:  err.Error(),
 			}
@@ -389,7 +508,7 @@ func GetTaskStatusByGroupIDs(groupIDs []string) []*response.TaskStatusResultByGr
 		}
 
 		if len(resp.Kvs) == 0 {
-			errorCode := response.ErrorResult{
+			errorCode := global.Error{
 				Code: global.ErrorTaskGroupNotExists,
 				Msg:  global.ErrorTaskGroupNotExists.String(),
 			}
@@ -441,7 +560,7 @@ func GetAllTaskStatus(model model.TaskListAll) response.AllTaskStatusResult {
 		}
 		cursor, err = resourceutils.NewEtcdCursor(global.GetEtcdClient(), global.TasksTaskIDPrefix, pageSize)
 		if err != nil {
-			errResult := &response.ErrorResult{
+			errResult := &global.Error{
 				Code: global.ErrorSystemError,
 				Msg:  err.Error(),
 			}
@@ -459,7 +578,7 @@ func GetAllTaskStatus(model model.TaskListAll) response.AllTaskStatusResult {
 		if commons.IsNil(cursor) {
 			cursorNode, err := resourceutils.GetCursorNode(global.GetEtcdClient(), global.CursorPrefix+model.QueryID)
 			if err != nil {
-				errResult := response.ErrorResult{
+				errResult := global.Error{
 					Code: global.ErrorSystemError,
 					Msg:  err.Error(),
 				}
@@ -471,7 +590,7 @@ func GetAllTaskStatus(model model.TaskListAll) response.AllTaskStatusResult {
 			req.Api = httpquerry.UrlListAllTasks
 			body, err := json.Marshal(model)
 			if err != nil {
-				errResult := response.ErrorResult{
+				errResult := global.Error{
 					Code: global.ErrorSystemError,
 					Msg:  err.Error(),
 				}
@@ -481,7 +600,7 @@ func GetAllTaskStatus(model model.TaskListAll) response.AllTaskStatusResult {
 			req.Body = string(body)
 			resp, err := req.ExecRequest()
 			if err != nil {
-				errResult := response.ErrorResult{
+				errResult := global.Error{
 					Code: global.ErrorSystemError,
 					Msg:  err.Error(),
 				}
@@ -494,7 +613,7 @@ func GetAllTaskStatus(model model.TaskListAll) response.AllTaskStatusResult {
 		}
 	}
 	if cursor.Finish() {
-		errResult := &response.ErrorResult{
+		errResult := &global.Error{
 			Code: global.ErrorCursorFinished,
 			Msg:  global.ErrorCursorFinished.String(),
 		}
@@ -504,7 +623,7 @@ func GetAllTaskStatus(model model.TaskListAll) response.AllTaskStatusResult {
 
 	kvs, err := cursor.Next()
 	if err != nil {
-		errResult := &response.ErrorResult{
+		errResult := &global.Error{
 			Code: global.ErrorSystemError,
 			Msg:  err.Error(),
 		}
@@ -517,7 +636,7 @@ func GetAllTaskStatus(model model.TaskListAll) response.AllTaskStatusResult {
 		var taskStatus global.TaskStatus
 		if err := json.Unmarshal(v.Value, &taskStatus); err != nil {
 			taskStatusResult.TaskID = string(k)
-			taskStatusResult.Errors = &response.ErrorResult{
+			taskStatusResult.Errors = &global.Error{
 				Code: global.ErrorSystemError,
 				Msg:  err.Error(),
 			}
@@ -534,7 +653,7 @@ func GetAllTaskStatus(model model.TaskListAll) response.AllTaskStatusResult {
 
 	// 插入本地cursorMap
 	if err := cursor.RegisterToCursorMap(); err != nil {
-		errResult := response.ErrorResult{
+		errResult := global.Error{
 			Code: global.ErrorSystemError,
 			Msg:  err.Error(),
 		}
@@ -543,7 +662,7 @@ func GetAllTaskStatus(model model.TaskListAll) response.AllTaskStatusResult {
 
 	// 提交etcd 服务器 '/cursor/{queryid}'
 	if err := cursor.RegisterToEtcd(global.GetEtcdClient()); err != nil {
-		errResult := response.ErrorResult{
+		errResult := global.Error{
 			Code: global.ErrorSystemError,
 			Msg:  err.Error(),
 		}
@@ -551,6 +670,7 @@ func GetAllTaskStatus(model model.TaskListAll) response.AllTaskStatusResult {
 	}
 
 	result.LastPage = cursor.EtcdPaginte.LastPage
+	result.CurrentPage = cursor.EtcdPaginte.CurrentPage
 
 	return result
 }

@@ -1,11 +1,17 @@
 package global
 
 type ErrorCode int
+type Error struct {
+	Code ErrorCode `map:"code" json:"code" yaml:"code"`
+	Msg  string    `map:"msg" json:"msg" yaml:"msg"`
+}
 
 const (
 	ErrorSystemError        ErrorCode = 10001
 	ErrorCursorFinished     ErrorCode = 20001
 	ErrorNodeNotExists      ErrorCode = 40001
+	ErrorNodeIsRunning      ErrorCode = 40002
+	ErrorNodeNotAlive       ErrorCode = 40003
 	ErrorTaskNotExists      ErrorCode = 50001
 	ErrorTaskGroupNotExists ErrorCode = 50002
 )
@@ -16,6 +22,10 @@ func (code ErrorCode) String() string {
 		return "cursor query have finished"
 	case 40001:
 		return "node not exists"
+	case 40002:
+		return "node is running"
+	case 40003:
+		return "node not alive"
 	case 50001:
 		return "task not exists"
 	case 50002:
@@ -23,4 +33,8 @@ func (code ErrorCode) String() string {
 	default:
 		return ""
 	}
+}
+
+func (err *Error) Error() string {
+	return err.Code.String()
 }

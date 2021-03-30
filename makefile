@@ -27,9 +27,10 @@ linux:
 
 darwin:
 	@make clean
-	@go mod tidy
-	@go mod vendor
+	-@go mod tidy
+	-@go mod vendor
 	@CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -ldflags '-w -s' -o target/${BINARY}-${VERSION}-${DARWIN}
+	@echo "build successed"
 
 windows:
 	@make clean

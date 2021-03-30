@@ -191,3 +191,15 @@ type TasksGroupIDVal struct {
 	GroupID string `mapstructure:"groupId" json:"groupId" yaml:"groupId"`
 	TaskID  string `mapstructure:"taskId" json:"taskId" yaml:"taskId"`
 }
+
+type TasksTypeVal struct {
+	TaskID  string `map:"taskId" json:"taskId" yaml:"taskId"`
+	GroupID string `map:"groupId" json:"groupId" yaml:"groupId"`
+	NodeID  string `map:"nodeId" json:"nodeId" yaml:"nodeId"`
+}
+
+type TasksMD5Val struct {
+	TaskID  string `map:"taskId" json:"taskId" yaml:"taskId"`
+	GroupID string `map:"groupId" json:"groupId" yaml:"groupId"`
+	NodeID  string `map:"nodeId" json:"nodeId" yaml:"nodeId"`
+}

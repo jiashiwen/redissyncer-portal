@@ -48,7 +48,7 @@ type NodeStatus struct {
 	NodeType string `mapstructure:"nodetype" json:"nodetype" yaml:"nodetype"`
 
 	//节点Id
-	NodeId string `mapstructure:"nodeid" json:"nodeid" yaml:"nodeid"`
+	NodeID string `mapstructure:"nodeid" json:"nodeid" yaml:"nodeid"`
 
 	//节点ip地址
 	NodeAddr string `mapstructure:"nodeaddr" json:"nodeaddr" yaml:"nodeaddr"`
@@ -84,8 +84,6 @@ func NewNode() *Node {
 func (node *Node) Start(wg *sync.WaitGroup) {
 	defer wg.Done()
 	defer node.NodeCancel()
-
-	wg.Add(1)
 	node.ReportStatus(node.NodeContext, wg)
 
 }
@@ -119,7 +117,7 @@ func (node *Node) Registry() error {
 
 	nodeStatus := &NodeStatus{
 		NodeType:       node.NodeType,
-		NodeId:         node.NodeId,
+		NodeID:         node.NodeId,
 		NodeAddr:       node.NodeAddr,
 		NodePort:       node.NodePort,
 		HeartbeatUrl:   "/health",
@@ -151,7 +149,7 @@ func (node *Node) ReportStatus(ctx context.Context, wg *sync.WaitGroup) {
 		now := time.Now().UnixNano() / 1e6
 		nodeStatus := &NodeStatus{
 			NodeType:       node.NodeType,
-			NodeId:         node.NodeId,
+			NodeID:         node.NodeId,
 			NodeAddr:       node.NodeAddr,
 			NodePort:       node.NodePort,
 			HeartbeatUrl:   "/health",

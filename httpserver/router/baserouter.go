@@ -31,3 +31,12 @@ func InitTaskRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
 
 	return TaskRouter
 }
+
+func InitNodeRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
+	NodeRouter := Router.Group("node")
+	{
+		NodeRouter.POST("listall", api.NodeListAll)
+	}
+
+	return NodeRouter
+}

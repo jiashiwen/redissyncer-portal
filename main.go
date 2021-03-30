@@ -7,6 +7,7 @@ import (
 	"redissyncer-portal/httpserver/router"
 	"redissyncer-portal/inspection"
 	"redissyncer-portal/node"
+	"redissyncer-portal/resourceutils"
 	"sync"
 )
 
@@ -18,6 +19,11 @@ func main() {
 	global.RSPLog = core.Zap()
 
 	wg := &sync.WaitGroup{}
+
+	//start CursorGC
+	resourceutils.NewEtcdCursorGC(10, 300000)
+	wg.Add(1)
+	go resourceutils.StartCursorGC(wg)
 
 	//start node
 	node := node.NewNode()
@@ -37,4 +43,5 @@ func main() {
 	r := router.RootRouter()
 	addr := "0.0.0.0:" + global.RSPViper.GetString("http.port")
 	httpserver.StartServer(addr, r)
+
 }

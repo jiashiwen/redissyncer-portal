@@ -20,7 +20,7 @@ type NodeSelector struct {
 func (nodeSelector *NodeSelector) SelectNode() (*commons.PairList, error) {
 	nodeIncludeTasks := make(map[string]int64)
 
-	//ToDo 解决节点启动后没有任务的问题
+	//解决节点启动后没有任务的问题
 	//将所有worker节点预制到map，值为0
 	//获取所有redissyncer 的node节点
 	nodeResp, err := nodeSelector.EtcdClient.Get(context.Background(), global.NodesPrefix+global.NodeTypeRedissyncer, clientv3.WithPrefix())
