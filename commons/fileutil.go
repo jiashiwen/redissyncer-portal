@@ -56,8 +56,8 @@ func IsFile(path string) bool {
 }
 
 //复制文件
-func CopyFile(src string, dst string, buffersize int) error {
-	buf := make([]byte, buffersize)
+func CopyFile(src string, dst string, bufferSize int) error {
+	buf := make([]byte, bufferSize)
 	source, err := os.Open(src)
 	if err != nil {
 		return err

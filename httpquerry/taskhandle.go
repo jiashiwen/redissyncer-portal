@@ -1,4 +1,4 @@
-//用于访问redissyncer-server
+//用于访问redisSyncer-server
 //任务操作包括：创建任务、启动任务、任务查询、任务停止和任务删除
 
 package httpquerry
@@ -22,6 +22,7 @@ const (
 	UrlRemoveTask   = "/api/v2/removetask"
 	UrlListTasks    = "/api/v2/listtasks"
 	UrlListAllTasks = "/task/listall"
+	UrlListByNode   = "/task/listbynode"
 	ImportFilePath  = "/api/v2/file/createtask"
 )
 
@@ -99,7 +100,7 @@ func (r *HttpRequest) CreateTask(createJson string) ([]string, error) {
 	}
 	taskIds := gjson.Get(resp, "data").Array()
 	if len(taskIds) == 0 {
-		return nil, errors.New("task create faile")
+		return nil, errors.New("task create fail")
 	}
 	var taskIdsStrArray []string
 	for _, v := range taskIds {
@@ -111,9 +112,9 @@ func (r *HttpRequest) CreateTask(createJson string) ([]string, error) {
 }
 
 //Start task
-func (r *HttpRequest) StartTask(taskid string) (string, error) {
+func (r *HttpRequest) StartTask(taskID string) (string, error) {
 	jsonMap := make(map[string]interface{})
-	jsonMap["taskid"] = taskid
+	jsonMap["taskid"] = taskID
 	startJson, err := json.Marshal(jsonMap)
 	if err != nil {
 		return "", err
@@ -189,7 +190,7 @@ func (r *HttpRequest) GetTaskStatus(ids []string) (map[string]string, error) {
 	taskArray := gjson.Get(listResp, "data").Array()
 
 	if len(taskArray) == 0 {
-		return nil, errors.New("No status return")
+		return nil, errors.New("no status return")
 	}
 
 	statusMap := make(map[string]string)

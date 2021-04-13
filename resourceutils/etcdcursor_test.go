@@ -49,7 +49,7 @@ func TestEtcdCursor(t *testing.T) {
 		return
 	}
 
-	for !cursor.Finish() {
+	for !cursor.IsFinished() {
 
 		fmt.Printf("-------currentpage %d------- \n", cursor.EtcdPaginte.CurrentPage)
 		kvs, err := cursor.Next()

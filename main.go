@@ -41,7 +41,7 @@ func main() {
 	//启动http server
 	//wg.Add(1)
 	r := router.RootRouter()
-	addr := "0.0.0.0:" + global.RSPViper.GetString("http.port")
+	addr := "0.0.0.0:" + global.RSPViper.GetString("node.nodeport")
 	httpserver.StartServer(addr, r)
 
 }

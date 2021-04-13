@@ -23,7 +23,7 @@ func RandomOmicIp() string {
 }
 
 func numToIp(num int) string {
-	var arr []int = make([]int, 4)
+	arr := make([]int, 4)
 	arr[0] = (num >> 24) & 0xff
 	arr[1] = (num >> 16) & 0xff
 	arr[2] = (num >> 8) & 0xff
@@ -32,7 +32,7 @@ func numToIp(num int) string {
 }
 
 func numToOmicIp(num int) string {
-	var arr []int = make([]int, 2)
+	arr := make([]int, 2)
 	arr[0] = (num >> 24) & 0xff
 	arr[1] = (num >> 16) & 0xff
 	return fmt.Sprintf("%d.%d.*.*", arr[0], arr[1])

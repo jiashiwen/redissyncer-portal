@@ -1,7 +1,7 @@
 package commons
 
 import (
-	redis "github.com/go-redis/redis/v7"
+	"github.com/go-redis/redis/v7"
 )
 
 //GetGoRedisClient 获取redis client
@@ -15,7 +15,7 @@ func GetGoRedisConn(opt *redis.Options) *redis.Conn {
 	return client.Conn()
 }
 
-//redisserver联通性校验
+//redis server联通性校验
 func CheckRedisClientConnect(r *redis.Client) error {
 	_, err := r.Ping().Result()
 	if err != nil {

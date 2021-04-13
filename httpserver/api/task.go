@@ -23,7 +23,7 @@ func TaskCreate(c *gin.Context) {
 	resp, err := service.CreateTask(string(body))
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
-		// return
+		return
 	}
 
 	// c.JSON(http.StatusOK, body)
@@ -31,10 +31,27 @@ func TaskCreate(c *gin.Context) {
 
 }
 
+func TaskStart(c *gin.Context) {
+	var start model.TaskStart
+	if err := c.ShouldBindJSON(&start); err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	resp, err := service.StartTask(start)
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+	}
+
+	c.Data(http.StatusOK, "application/json", []byte(resp))
+}
+
 func TaskStop(c *gin.Context) {
 	var stopJSON model.TaskIDBody
 	if err := c.ShouldBindJSON(&stopJSON); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
+		c.JSON(http.StatusOK, gin.H{
 			"error": err.Error(),
 		})
 		return
@@ -78,6 +95,21 @@ func TaskListAll(c *gin.Context) {
 	all := service.GetAllTaskStatus(listAllJSON)
 
 	c.JSON(http.StatusOK, all)
+}
+
+func TaskListByNodeID(c *gin.Context) {
+	var listByNode model.TaskListByNode
+
+	if err := c.ShouldBindJSON(&listByNode); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	resp := service.TaskStatusByNodeID(listByNode)
+
+	c.JSON(http.StatusOK, resp)
 }
 
 func TaskListByIDs(c *gin.Context) {

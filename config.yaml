@@ -42,8 +42,8 @@ redis:
   password: ''
 
 # http server configuration
-http:
-  port: 8899
+#http:
+#  port: 8899
 
 # email configuration
 email:

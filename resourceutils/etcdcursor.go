@@ -1,5 +1,5 @@
 // Etcd游标
-// 根据查询前缀和返回pagesize 定义游标
+// 根据查询前缀和返回PageSize 定义游标
 // 游标单向向前
 package resourceutils
 
@@ -128,6 +128,6 @@ func GetCursorNode(cli *clientv3.Client, queryID string) (*node.NodeStatus, erro
 }
 
 //是否已完成查询
-func (cursor *EtcdCursor) Finish() bool {
+func (cursor *EtcdCursor) IsFinished() bool {
 	return cursor.QueryFinish
 }

@@ -3,11 +3,11 @@
 package utils
 
 import (
-	"redissyncer-portal/global"
 	zaprotatelogs "github.com/lestrrat-go/file-rotatelogs"
 	"go.uber.org/zap/zapcore"
 	"os"
 	"path"
+	"redissyncer-portal/global"
 	"time"
 )
 

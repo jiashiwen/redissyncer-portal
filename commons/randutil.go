@@ -10,11 +10,9 @@ const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
 //生成随机字符串
 func StringWithCharset(length int, charset string) string {
-	var seededRand *rand.Rand = rand.New(
-		rand.NewSource(time.Now().UnixNano()))
 	b := make([]byte, length)
 	for i := range b {
-		b[i] = charset[seededRand.Intn(len(charset))]
+		b[i] = charset[rand.New(rand.NewSource(time.Now().UnixNano())).Intn(len(charset))]
 	}
 	return string(b)
 }
@@ -26,7 +24,6 @@ func RandString(length int) string {
 
 	b := make([]byte, length)
 	for i := range b {
-		//b[i] = charset[seededRand.Intn(len(charset))]
 		b[i] = charset[rand.Intn(len(charset))]
 
 	}

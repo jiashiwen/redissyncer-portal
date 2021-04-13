@@ -25,10 +25,6 @@ const (
 const (
 	//IDSeed id种子
 	IDSeed = "/uniqid/idseed"
-	//LastInspectTime key: /inspect/lastinspectiontime ;value:unix时间戳
-	LastInspectTime = "/inspect/lastinspectiontime"
-	//InspectLock 巡检锁
-	InspectLock = "/inspect/execlock"
 )
 
 const (
@@ -38,6 +34,7 @@ const (
 	NodeTypeRedissyncer = "redissyncernodeserver"
 )
 
+//任务状态
 const (
 	// TaskStatusTypeSTOP STOP	0	任务停止状态
 	TaskStatusTypeSTOP TaskStatusType = 0
@@ -45,18 +42,19 @@ const (
 	TaskStatusTypeCREATING TaskStatusType = 1
 	// TaskStatusTypeCREATED CREATED	2	任务创建完成
 	TaskStatusTypeCREATED TaskStatusType = 2
-	// TaskStatusTypeRUN RUN	3	任务运行中，表示数据同步以前，发送psync命令，源redis进行bgsave 生成rdb的过程；描述不太贴切，待改进
-	TaskStatusTypeRUN TaskStatusType = 3
+	// TaskStatusTypeSTARTING 3	任务运行中，表示数据同步以前，发送psync命令，源redis进行bgsave 生成rdb的过程；描述不太贴切，待改进
+	TaskStatusTypeSTARTING TaskStatusType = 3
 	// TaskStatusTypeBROKEN BROKEN	5	任务异常
 	TaskStatusTypeBROKEN TaskStatusType = 5
-	// TaskStatusTypeRDBRUNING RDBRUNING	6	全量RDB同步过程中
-	TaskStatusTypeRDBRUNING TaskStatusType = 6
-	// TaskStatusTypeCOMMANDRUNING  COMMANDRUNING	7	增量同步中
-	TaskStatusTypeCOMMANDRUNING TaskStatusType = 7
+	// TaskStatusTypeRDBRUNNING RDBRUNNING	6	全量RDB同步过程中
+	TaskStatusTypeRDBRUNNING TaskStatusType = 6
+	// TaskStatusTypeCOMMANDRUNNING  COMMANDRUNNING	7	增量同步中
+	TaskStatusTypeCOMMANDRUNNING TaskStatusType = 7
 	// TaskStatusTypeFINISH FINISH	8
 	TaskStatusTypeFINISH TaskStatusType = 8
 )
 
+//任务类型
 const (
 	// TaskTypeSYNC SYNC 1 replication 已使用
 	TaskTypeSYNC TaskType = 1
@@ -76,22 +74,22 @@ const (
 	TaskTypeCOMMANDDUMPUP TaskType = 8
 )
 
-func (taskstatustype TaskStatusType) String() string {
-	switch taskstatustype {
+func (taskStatusType TaskStatusType) String() string {
+	switch taskStatusType {
 	case TaskStatusTypeSTOP:
 		return "STOP"
 	case TaskStatusTypeCREATING:
 		return "CREATING"
 	case TaskStatusTypeCREATED:
 		return "CREATED"
-	case TaskStatusTypeRUN:
-		return "RUN"
+	case TaskStatusTypeSTARTING:
+		return "STARTING"
 	case TaskStatusTypeBROKEN:
 		return "BROKEN"
-	case TaskStatusTypeRDBRUNING:
-		return "RDBRUNING"
-	case TaskStatusTypeCOMMANDRUNING:
-		return "COMMANDRUNING"
+	case TaskStatusTypeRDBRUNNING:
+		return "RDBRUNNING"
+	case TaskStatusTypeCOMMANDRUNNING:
+		return "COMMANDRUNNING"
 	case TaskStatusTypeFINISH:
 		return "FINISH"
 	default:
@@ -99,8 +97,8 @@ func (taskstatustype TaskStatusType) String() string {
 	}
 }
 
-func (tasktype TaskType) String() string {
-	switch tasktype {
+func (taskType TaskType) String() string {
+	switch taskType {
 	case TaskTypeSYNC:
 		return "SYNC"
 	case TaskTypeRDB:
@@ -129,6 +127,7 @@ type TaskStatus struct {
 	AutoStart          bool     `mapstructure:"autostart" json:"autostart" yaml:"autostart"`
 	BatchSize          int64    `mapstructure:"batchSize" json:"batchSize" yaml:"batchSize"`
 	CommandFilter      string   `mapstructure:"commandFilter" json:"commandFilter" yaml:"commandFilter"`
+	CreateTime         string   `mapstructure:"createTime" json:"createTime" yaml:"createTime"`
 	DBMapper           string   `mapstructure:"dbMapper" json:"dbMapper" yaml:"dbMapper"`
 	ErrorCount         int64    `mapstructure:"errorCount" json:"errorCount" yaml:"errorCount"`
 	ExpandJSON         string   `mapstructure:"expandJson" json:"expandJson" yaml:"expandJson"`
@@ -171,6 +170,7 @@ type TaskStatus struct {
 	TaskName           string   `mapstructure:"taskName" json:"taskName" yaml:"taskName"`
 	TaskType           int      `mapstructure:"tasktype" json:"tasktype" yaml:"tasktype"`
 	TimeDeviation      int64    `mapstructure:"timeDeviation" json:"timeDeviation" yaml:"timeDeviation"`
+	UpdateTime         int64    `mapstructure:"updateTime" json:"updateTime" yaml:"updateTime"`
 }
 
 type TasksOffset struct {

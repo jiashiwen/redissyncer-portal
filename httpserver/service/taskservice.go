@@ -19,7 +19,7 @@ import (
 
 func CreateTask(body string) (string, error) {
 	// 节点选择 pairelist 给出节点map[nodeid]任务数量，按任务数量排序
-	selector := node.NodeSelector{
+	selector := node.Selector{
 		EtcdClient: global.GetEtcdClient(),
 	}
 
@@ -55,7 +55,7 @@ func CreateTask(body string) (string, error) {
 }
 
 //Start task
-func StartTask(body model.TaskStartBody) (string, error) {
+func StartTask(body model.TaskStart) (string, error) {
 
 	var taskStatus global.TaskStatus
 	//通过taskID 获取TaskStatus
@@ -355,12 +355,10 @@ func GetTaskStatus(id string) (*global.TaskStatus, error) {
 
 	resp, err := global.GetEtcdClient().Get(context.Background(), global.TasksTaskIDPrefix+id)
 	if err != nil {
-		global.RSPLog.Sugar().Error(err)
 		return nil, err
 	}
 	if len(resp.Kvs) == 0 {
 		err := errors.New("task not exist")
-		global.RSPLog.Sugar().Error(err)
 		return nil, err
 	}
 
@@ -612,7 +610,7 @@ func GetAllTaskStatus(model model.TaskListAll) response.AllTaskStatusResult {
 			return result
 		}
 	}
-	if cursor.Finish() {
+	if cursor.IsFinished() {
 		errResult := &global.Error{
 			Code: global.ErrorCursorFinished,
 			Msg:  global.ErrorCursorFinished.String(),
@@ -673,6 +671,132 @@ func GetAllTaskStatus(model model.TaskListAll) response.AllTaskStatusResult {
 	result.CurrentPage = cursor.EtcdPaginte.CurrentPage
 
 	return result
+}
+
+//根据nodeid获取节点上所有任务状态
+func TaskStatusByNodeID(model model.TaskListByNode) response.AllTaskStatusResult {
+	var result response.AllTaskStatusResult
+	var taskStatusArray []*response.TaskStatusResult
+	var cursor *resourceutils.EtcdCursor
+
+	if model.QueryID == "" {
+		var err error
+		pageSize := int64(10)
+		if model.BatchSize > 0 {
+			pageSize = model.BatchSize
+		}
+		cursor, err = resourceutils.NewEtcdCursor(global.GetEtcdClient(), global.TasksNodePrefix+model.NodeID, pageSize)
+		if err != nil {
+			errResult := &global.Error{
+				Code: global.ErrorSystemError,
+				Msg:  err.Error(),
+			}
+			result.Errors = append(result.Errors, errResult)
+			return result
+		}
+	}
+	if model.QueryID != "" {
+		// 根据 queryID 查询
+		cursorMap := resourceutils.GetCursorQueryMap()
+		cursor = (*cursorMap)[model.QueryID]
+
+		//判断本地Map是否有cursor存在
+		if commons.IsNil(cursor) {
+			cursorNode, err := resourceutils.GetCursorNode(global.GetEtcdClient(), global.CursorPrefix+model.QueryID)
+			if err != nil {
+				errResult := global.Error{
+					Code: global.ErrorSystemError,
+					Msg:  err.Error(),
+				}
+				result.Errors = append(result.Errors, &errResult)
+				return result
+			}
+			//  http请求 cursor所在node 返回数据
+			req := httpquerry.New("http://" + cursorNode.NodeAddr + ":" + strconv.Itoa(cursorNode.NodePort))
+			req.Api = httpquerry.UrlListByNode
+			body, err := json.Marshal(model)
+			if err != nil {
+				errResult := global.Error{
+					Code: global.ErrorSystemError,
+					Msg:  err.Error(),
+				}
+				result.Errors = append(result.Errors, &errResult)
+				return result
+			}
+			req.Body = string(body)
+			resp, err := req.ExecRequest()
+			if err != nil {
+				errResult := global.Error{
+					Code: global.ErrorSystemError,
+					Msg:  err.Error(),
+				}
+				result.Errors = append(result.Errors, &errResult)
+				return result
+			}
+
+			json.Unmarshal([]byte(resp), result)
+			return result
+		}
+	}
+
+	//判断cursor是否执行完毕
+	if cursor.IsFinished() {
+		errResult := &global.Error{
+			Code: global.ErrorCursorFinished,
+			Msg:  global.ErrorCursorFinished.String(),
+		}
+		result.Errors = append(result.Errors, errResult)
+		return result
+	}
+
+	kvs, err := cursor.Next()
+	if err != nil {
+		errResult := &global.Error{
+			Code: global.ErrorSystemError,
+			Msg:  err.Error(),
+		}
+		result.Errors = append(result.Errors, errResult)
+		global.RSPLog.Sugar().Error(errResult)
+		return result
+	}
+
+	//获取taskIDs
+	for _, v := range kvs {
+		var taskNodeVal global.TasksNodeVal
+		var taskStatusResult response.TaskStatusResult
+		key := string(v.Key)
+		if err := json.Unmarshal(v.Value, &taskNodeVal); err != nil {
+			errResult := &global.Error{
+				Code: global.ErrorSystemError,
+				Msg:  err.Error(),
+			}
+			taskStatusResult.TaskID = key
+			taskStatusResult.Errors = errResult
+			taskStatusArray = append(taskStatusArray, &taskStatusResult)
+			global.RSPLog.Sugar().Error(err)
+			continue
+		}
+		taskStatusResult.TaskID = taskNodeVal.TaskID
+		taskStatus, err := GetTaskStatus(taskNodeVal.TaskID)
+		if err != nil {
+			errResult := &global.Error{
+				Code: global.ErrorSystemError,
+				Msg:  err.Error(),
+			}
+			taskStatusResult.Errors = errResult
+			taskStatusArray = append(taskStatusArray, &taskStatusResult)
+			global.RSPLog.Sugar().Error(err)
+			continue
+		}
+		taskStatusResult.TaskStatus = taskStatus
+		taskStatusArray = append(taskStatusArray, &taskStatusResult)
+	}
+	result.QueryID = cursor.QueryID
+	result.CurrentPage = cursor.CurrentPage
+	result.LastPage = cursor.EtcdPaginte.LastPage
+	result.TaskStatusArray = taskStatusArray
+	return result
+
 }
 
 // @title    GetSameTaskNameIds

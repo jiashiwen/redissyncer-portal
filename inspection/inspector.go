@@ -46,7 +46,7 @@ type Inspector struct {
 	//巡检器context
 	InspectorContext context.Context
 
-	//巡检器cancle
+	//巡检器cancel
 	InspectorCancel context.CancelFunc
 }
 
@@ -113,7 +113,7 @@ func (ict *Inspector) WatchInspectLastTime(ctx context.Context, wg *sync.WaitGro
 		// 	}
 		case <-rch:
 			ict.SetExecStatus(false)
-			global.RSPLog.Sugar().Debug("recive watch key event")
+			global.RSPLog.Sugar().Debug("receive watch key event")
 		case <-ctx.Done():
 			return
 		}
@@ -208,7 +208,9 @@ func (ict *Inspector) nodeHealthCheck() error {
 				}
 
 				//将服务器所在任务状态设置为broken
-				ict.changeNodesTasksStatus(nodeStatus.NodeID, global.TaskStatusTypeBROKEN)
+				if err := ict.changeNodesTasksStatus(nodeStatus.NodeID, global.TaskStatusTypeBROKEN); err != nil {
+					global.RSPLog.Sugar().Error(err)
+				}
 			}
 		}
 	}
@@ -224,8 +226,8 @@ func (ict *Inspector) changeNodesTasksStatus(nodeID string, status global.TaskSt
 		return err
 	}
 	for _, v := range getResp.Kvs {
-		//获取taskstatus并修改状态
-		var taskstatus global.TaskStatus
+		//获取taskStatus并修改状态
+		var taskStatus global.TaskStatus
 		getResp, err := ict.EtcdClient.Get(context.Background(), global.TasksTaskIDPrefix+strings.Split(string(v.Key), "/")[4])
 		if err != nil {
 			global.RSPLog.Sugar().Error(err)
@@ -236,22 +238,27 @@ func (ict *Inspector) changeNodesTasksStatus(nodeID string, status global.TaskSt
 			continue
 		}
 
-		if err := json.Unmarshal(getResp.Kvs[0].Value, &taskstatus); err != nil {
-			global.RSPLog.Sugar().Error(err)
-			continue
-		}
-		currentstatus := taskstatus.Status
-		taskstatus.Status = int(status)
-		taskidval := global.TaskIDVal{
-			TaskID: taskstatus.TaskID,
-		}
-		statusJSON, err := json.Marshal(taskstatus)
-		if err != nil {
+		if err := json.Unmarshal(getResp.Kvs[0].Value, &taskStatus); err != nil {
 			global.RSPLog.Sugar().Error(err)
 			continue
 		}
 
-		taskidvalJSON, err := json.Marshal(taskidval)
+		if status == global.TaskStatusType(taskStatus.Status) {
+			err := errors.New("task status equal dist status")
+			global.RSPLog.Sugar().Error(err)
+		}
+
+		origincurrentStatus := taskStatus.Status
+		taskStatus.Status = int(status)
+		taskIDVal := global.TaskIDVal{
+			TaskID: taskStatus.TaskID,
+		}
+		statusJSON, err := json.Marshal(taskStatus)
+		if err != nil {
+			global.RSPLog.Sugar().Error(err)
+			continue
+		}
+		taskIDValJSON, err := json.Marshal(taskIDVal)
 		if err != nil {
 			global.RSPLog.Sugar().Error(err)
 			continue
@@ -259,17 +266,16 @@ func (ict *Inspector) changeNodesTasksStatus(nodeID string, status global.TaskSt
 
 		global.RSPLog.Sugar().Debug(strings.Split(string(v.Key), "/")[4])
 
-		kv.Txn(context.TODO()).Then(
-
+		if _, err := kv.Txn(context.TODO()).Then(
 			//del TasksStatus key
-			clientv3.OpDelete(global.TasksStatusPrefix+strconv.Itoa(currentstatus)+"/"+taskstatus.TaskID),
-
+			clientv3.OpDelete(global.TasksStatusPrefix+strconv.Itoa(origincurrentStatus)+"/"+taskStatus.TaskID),
 			// put TasksTaskId
-			clientv3.OpPut(global.TasksTaskIDPrefix+taskstatus.TaskID, string(statusJSON)),
-
+			clientv3.OpPut(global.TasksTaskIDPrefix+taskStatus.TaskID, string(statusJSON)),
 			//put Task current status key
-			clientv3.OpPut(global.TasksStatusPrefix+strconv.Itoa(taskstatus.Status)+"/"+taskstatus.TaskID, string(taskidvalJSON)),
-		).Commit()
+			clientv3.OpPut(global.TasksStatusPrefix+strconv.Itoa(taskStatus.Status)+"/"+taskStatus.TaskID, string(taskIDValJSON)),
+		).Commit(); err != nil {
+			global.RSPLog.Sugar().Error(err)
+		}
 
 	}
 	return nil

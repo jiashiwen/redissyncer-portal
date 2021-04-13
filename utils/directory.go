@@ -1,9 +1,9 @@
 package utils
 
 import (
-	"redissyncer-portal/global"
 	"go.uber.org/zap"
 	"os"
+	"redissyncer-portal/global"
 )
 
 //@function: PathExists

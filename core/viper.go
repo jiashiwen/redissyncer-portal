@@ -1,13 +1,13 @@
 package core
 
 import (
-	"redissyncer-portal/global"
-	"redissyncer-portal/utils"
 	"flag"
 	"fmt"
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
 	"os"
+	"redissyncer-portal/global"
+	"redissyncer-portal/utils"
 )
 
 func Viper(path ...string) *viper.Viper {

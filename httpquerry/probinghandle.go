@@ -21,9 +21,9 @@ func NodeAlive(addr, port string) bool {
 		return false
 	}
 
-	resp, resperr := httpclient.Do(req)
-	if resperr != nil {
-		global.RSPLog.Sugar().Debug(resperr)
+	resp, respErr := httpclient.Do(req)
+	if respErr != nil {
+		global.RSPLog.Sugar().Debug(respErr)
 		return false
 	}
 

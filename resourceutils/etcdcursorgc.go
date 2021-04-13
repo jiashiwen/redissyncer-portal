@@ -59,9 +59,7 @@ func (gc *EtcdCursorGC) DoGC(ctx context.Context, wg *sync.WaitGroup) {
 			}
 			global.RSPLog.Sugar().Debug("current unix millisecond is: ", currentUnixTime)
 		}
-
 	}
-
 }
 
 //初始化cursorGC

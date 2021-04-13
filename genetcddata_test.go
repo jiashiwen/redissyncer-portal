@@ -250,7 +250,7 @@ func GenTaskStatusData(taskname string) *global.TaskStatus {
 		SourceRedisType:    1,
 		SourceURI:          "redis://" + sourceip + ":6379?authPassword=redistest0102",
 		SourceUserName:     "",
-		Status:             int(global.TaskStatusTypeRDBRUNING),
+		Status:             int(global.TaskStatusTypeRDBRUNNING),
 		SyncType:           1,
 		TargetACL:          false,
 		TargetHost:         targetip,
@@ -329,4 +329,19 @@ func GenGlobalUniqID(idseed string, size int) []string {
 
 	return ids
 
+}
+
+func TestStatusValEqual(t *testing.T) {
+	status := global.TaskStatus{
+		Status: 6,
+		TaskID: "abc",
+	}
+	s := status.Status
+	str := status.TaskID
+
+	fmt.Println(&s)
+	fmt.Println(&status.Status)
+
+	fmt.Println(&str)
+	fmt.Println(&status.TaskID)
 }

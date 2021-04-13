@@ -18,16 +18,16 @@ const (
 //本节点描述
 type Node struct {
 	//节点类型
-	NodeType string `mapstructure:"nodetype" json:"nodetype" yaml:"nodetype"`
+	NodeType string `map:"nodetype" json:"nodetype" yaml:"nodetype"`
 
 	//节点Id
-	NodeId string `mapstructure:"nodeid" json:"nodeid" yaml:"nodeid"`
+	NodeId string `map:"nodeid" json:"nodeid" yaml:"nodeid"`
 
 	//节点ip地址
-	NodeAddr string `mapstructure:"nodeaddr" json:"nodeaddr" yaml:"nodeaddr"`
+	NodeAddr string `map:"nodeaddr" json:"nodeaddr" yaml:"nodeaddr"`
 
 	//探活port
-	NodePort int `mapstructure:"nodeport" json:"nodeport" yaml:"nodeport"`
+	NodePort int `map:"nodeport" json:"nodeport" yaml:"nodeport"`
 
 	//etcd 客户端
 	EtcdClient *clientv3.Client
@@ -45,25 +45,25 @@ type Node struct {
 //本节点状态
 type NodeStatus struct {
 	//节点类型
-	NodeType string `mapstructure:"nodetype" json:"nodetype" yaml:"nodetype"`
+	NodeType string `map:"nodetype" json:"nodetype" yaml:"nodetype"`
 
 	//节点Id
-	NodeID string `mapstructure:"nodeid" json:"nodeid" yaml:"nodeid"`
+	NodeID string `maps:"nodeid" json:"nodeid" yaml:"nodeid"`
 
 	//节点ip地址
-	NodeAddr string `mapstructure:"nodeaddr" json:"nodeaddr" yaml:"nodeaddr"`
+	NodeAddr string `maps:"nodeaddr" json:"nodeaddr" yaml:"nodeaddr"`
 
 	//探活port
-	NodePort int `mapstructure:"nodeport" json:"nodeport" yaml:"nodeport"`
+	NodePort int `map:"nodeport" json:"nodeport" yaml:"nodeport"`
 
 	//探活url
-	HeartbeatUrl string `mapstructure:"heartbeaturl" json:"heartbeaturl" yaml:"heartbeaturl"`
+	HeartbeatUrl string `map:"heartbeaturl" json:"heartbeaturl" yaml:"heartbeaturl"`
 
 	//是否在线
-	Online bool `mapstructure:"online" json:"online" yaml:"online"`
+	Online bool `map:"online" json:"online" yaml:"online"`
 
 	//最后上报时间，unix时间戳
-	LastReportTime int64 `mapstructure:"lastreporttime" json:"lastreporttime" yaml:"lastreporttime"`
+	LastReportTime int64 `map:"lastreporttime" json:"lastreporttime" yaml:"lastreporttime"`
 }
 
 //初始化node
@@ -102,7 +102,7 @@ func (node *Node) Registry() error {
 		return err
 	}
 
-	//若key存在，Online为true返回onde exists 错误
+	//若key存在，Online为true返回node exists 错误
 	if len(getResp.Kvs) > 0 {
 		var nodeStatus NodeStatus
 		if err := json.Unmarshal(getResp.Kvs[0].Value, &nodeStatus); err != nil {
