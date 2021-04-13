@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"redissyncer-portal/global"
+	"redissyncer-portal/httpquerry"
+	"strconv"
 	"sync"
 	"time"
 
@@ -109,7 +111,7 @@ func (node *Node) Registry() error {
 			return err
 		}
 
-		if nodeStatus.Online == true {
+		if nodeStatus.Online == true && httpquerry.NodeAlive(nodeStatus.NodeAddr, strconv.Itoa(nodeStatus.NodePort)) {
 			return errors.New("node exists")
 		}
 
