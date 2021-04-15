@@ -5,6 +5,9 @@ go 1.15
 require (
 	github.com/SermoDigital/jose v0.9.2-0.20180104203859-803625baeddc // indirect
 	github.com/apache/calcite-avatica-go/v3 v3.2.0 // indirect
+	github.com/chzyer/logex v1.1.10 // indirect
+	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e // indirect
+	github.com/chzyer/test v0.0.0-20180213035817-a1ea475d72b1 // indirect
 	github.com/coreos/etcd v3.3.25+incompatible
 	github.com/coreos/go-systemd v0.0.0-20191104093116-d3cd4ed1dbcf // indirect
 	github.com/cznic/b v0.0.0-20181122101859-a26611c4d92d // indirect
@@ -33,8 +36,10 @@ require (
 	github.com/kshvakov/clickhouse v1.3.5 // indirect
 	github.com/lestrrat-go/file-rotatelogs v2.4.0+incompatible
 	github.com/lestrrat-go/strftime v1.0.3 // indirect
+	github.com/mattn/go-shellwords v1.0.11 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/satori/go.uuid v1.2.0
+	github.com/spf13/cobra v1.1.3
 	github.com/spf13/viper v1.7.1
 	github.com/tebeka/strftime v0.1.5 // indirect
 	github.com/tidwall/gjson v1.6.8
@@ -42,7 +47,7 @@ require (
 	google.golang.org/grpc/examples v0.0.0-20210311221743-f168a3cb3bf5 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 	gopkg.in/rana/ora.v4 v4.1.15 // indirect
-	gopkg.in/yaml.v2 v2.3.0
+	gopkg.in/yaml.v2 v2.4.0
 	sigs.k8s.io/yaml v1.2.0 // indirect
 )
 

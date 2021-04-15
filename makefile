@@ -12,8 +12,8 @@ GOFILES=`find . -name "*.go" -type f -not -path "./vendor/*"`
 
 default:
 	@make clean
-	@go mod tidy
-	@go mod vendor
+	-@go mod tidy
+	-@go mod vendor
 	@CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags '-w -s' -o target/${BINARY}-${VERSION}-${LINUX}
 	@CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -ldflags '-w -s' -o target/${BINARY}-${VERSION}-${DARWIN}
 #	@CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -ldflags '-w -s' -o target/${BINARY}-${VERSION}-${WIN}.exe
@@ -32,11 +32,11 @@ darwin:
 	@CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -ldflags '-w -s' -o target/${BINARY}-${VERSION}-${DARWIN}
 	@echo "build successed"
 
-windows:
-	@make clean
-	@go mod tidy
-	@go mod vendor
-	@CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -ldflags '-w -s' -o target/${BINARY}-${VERSION}-${WIN}.exe
+#windows:
+#	@make clean
+#	-@go mod tidy
+#	-@go mod vendor
+#	@CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -ldflags '-w -s' -o target/${BINARY}-${VERSION}-${WIN}.exe
 
 list:
 	@echo ${PACKAGES}
@@ -52,8 +52,8 @@ test:
 vet:
 	@go vet $(VETPACKAGES)
 
-docker:
-    @docker build -t wuxiaoxiaoshen/example:latest .
+#docker:
+#    @docker build -t wuxiaoxiaoshen/example:latest .
 
 clean:
 	@if [ -f ${BINARY} ] ; then rm ${BINARY} ; fi
@@ -67,4 +67,4 @@ help:
 	@echo "make clean - 移除二进制文件和 vim swap files"
 
 
-.PHONY: default linux darwin windows fmt test vet clean help
+.PHONY: default linux darwin fmt test vet clean help

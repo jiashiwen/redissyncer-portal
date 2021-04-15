@@ -1,7 +1,6 @@
 package core
 
 import (
-	"flag"
 	"fmt"
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
@@ -12,11 +11,11 @@ import (
 
 func Viper(path ...string) *viper.Viper {
 	var config string
-	var daemon bool
+	
 	if len(path) == 0 {
-		flag.StringVar(&config, "c", "", "choose config file.")
-		flag.BoolVar(&daemon, "d", false, "run daemon")
-		flag.Parse()
+		//flag.StringVar(&config, "c", "", "choose config file.")
+		//flag.BoolVar(&daemon, "d", false, "run daemon")
+		//flag.Parse()
 		if config == "" { // 优先级: 命令行 > 环境变量 > 默认值
 			if configEnv := os.Getenv(utils.ConfigEnv); configEnv == "" {
 				config = utils.ConfigFile
@@ -39,7 +38,7 @@ func Viper(path ...string) *viper.Viper {
 	if err != nil {
 		panic(fmt.Errorf("Fatal error config file: %s \n", err))
 	}
-	v.Set("daemon", daemon)
+	//v.Set("daemon", daemon)
 	v.WatchConfig()
 
 	v.OnConfigChange(func(e fsnotify.Event) {
