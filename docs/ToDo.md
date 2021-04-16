@@ -39,8 +39,9 @@
 
 - [X] 程序后台运行调用go-daemon,为程序添加 '-d' 参数后台运行
 - [X] 每次启动将 pid 计入 pid 文件
-- [ ] 实现命令行start stop status
-- [ ] 程序退出清理pid文件
+- [X] 实现命令行start stop status
+- [X] 程序退出清理pid文件
+- [ ] 实现config文件默认为二进制文件同级
 
 - [ ] 开发测试环境迁移与搭建
     - [X] 基础镜像制作，包括基础编译环境的安装、docker及周边工具安装

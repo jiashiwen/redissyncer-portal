@@ -5,6 +5,7 @@ import (
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
 	"os"
+	"path/filepath"
 	"redissyncer-portal/global"
 	"redissyncer-portal/utils"
 )
@@ -13,12 +14,11 @@ func Viper(path ...string) *viper.Viper {
 	var config string
 
 	if len(path) == 0 {
-		//flag.StringVar(&config, "c", "", "choose config file.")
-		//flag.BoolVar(&daemon, "d", false, "run daemon")
-		//flag.Parse()
 		if config == "" { // 优先级: 命令行 > 环境变量 > 默认值
 			if configEnv := os.Getenv(utils.ConfigEnv); configEnv == "" {
-				config = utils.ConfigFile
+				//获取可执行文件的绝对路径
+				dir, _ := filepath.Abs(filepath.Dir(os.Args[0]))
+				config = dir + "/" + utils.ConfigFile
 				fmt.Printf("您正在使用config的默认值,config的路径为%v\n", utils.ConfigFile)
 			} else {
 				config = configEnv
