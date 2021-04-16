@@ -34,7 +34,13 @@ func statusCommandFunc(cmd *cobra.Command, args []string) {
 		cmd.PrintErr("error: ", err)
 		return
 	}
-	cmd.Println(dir + "/" + os.Args[0])
+
+	if filepath.IsAbs(filepath.Dir(os.Args[0])) {
+		cmd.Println(os.Args[0])
+	} else {
+		cmd.Println(dir + "/" + os.Args[0])
+	}
+
 	cmd.Println("pidfilepath: " + dir + "/pid")
 	cmd.Println("pid:" + strconv.Itoa(pidMap["pid"]))
 	if commons.CheckPid(pidMap["pid"]) {
