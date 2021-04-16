@@ -53,6 +53,7 @@ func getBasicCmd() *cobra.Command {
 		NewConfigCommand(),
 		NewStartCommand(),
 		NewStopCommand(),
+		NewStatusCommand(),
 	)
 
 	rootCmd.Flags().ParseErrorsWhitelist.UnknownFlags = true

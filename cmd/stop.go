@@ -12,11 +12,11 @@ import (
 
 func NewStopCommand() *cobra.Command {
 	sc := &cobra.Command{
-		Use:   "stop ",
+		Use:   "stop [-f]",
 		Short: "stop server",
 		Run:   stopCommandFunc,
 	}
-
+	sc.Flags().BoolP("force", "f", false, "stop server force")
 	return sc
 }
 
@@ -36,8 +36,18 @@ func stopCommandFunc(cmd *cobra.Command, args []string) {
 
 	cmd.Println("pid:" + strconv.Itoa(pidMap["pid"]))
 	cmd.Println("stopping ...")
+	force, _ := cmd.Flags().GetBool("force")
+
+	if force {
+		if err := syscall.Kill(pidMap["pid"], syscall.SIGKILL); err != nil {
+			cmd.PrintErr("error: ", err)
+			return
+		}
+	}
+
 	if err := syscall.Kill(pidMap["pid"], syscall.SIGTERM); err != nil {
 		cmd.PrintErr("error: ", err)
+		return
 	}
 
 	cmd.Println("server stopped successes")

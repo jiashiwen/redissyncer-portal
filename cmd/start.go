@@ -28,26 +28,24 @@ func NewStartCommand() *cobra.Command {
 }
 
 func startCommandFunc(cmd *cobra.Command, args []string) {
-	cmd.Println("start ....")
+	cmd.Println("server starting ...")
 	daemon, err := cmd.Flags().GetBool("daemon")
 	if err != nil {
 		panic(err)
 	}
-	cmd.Println(daemon)
+
 	global.RSPViper.Set("daemon", daemon)
 	startServer()
 }
 
 // 启动服务器
 func startServer() {
-	global.RSPLog = core.Zap()
-	//MainStart(os.Args[1:])
 
 	// -d 后台启动
 	if global.RSPViper.GetBool("daemon") {
 		cmd, err := background()
 		if err != nil {
-			fmt.Println(err)
+			panic(err)
 		}
 
 		//根据返回值区分父进程子进程

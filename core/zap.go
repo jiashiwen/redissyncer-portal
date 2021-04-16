@@ -5,6 +5,8 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"os"
+	"path"
+	"path/filepath"
 	"redissyncer-portal/global"
 	"redissyncer-portal/utils"
 	"time"
@@ -14,6 +16,14 @@ var level zapcore.Level
 
 func Zap() (logger *zap.Logger) {
 	if ok, _ := utils.PathExists(global.RSPConfig.Zap.Director); !ok { // 判断是否有Director文件夹
+		if !path.IsAbs(global.RSPConfig.Zap.Director) {
+			dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+			if err != nil {
+				panic(err)
+			}
+			global.RSPConfig.Zap.Director = dir + "/" + global.RSPConfig.Zap.Director
+			global.RSPConfig.Zap.LinkName = dir + "/" + global.RSPConfig.Zap.LinkName
+		}
 		fmt.Printf("create %v directory\n", global.RSPConfig.Zap.Director)
 		_ = os.Mkdir(global.RSPConfig.Zap.Director, os.ModePerm)
 	}
