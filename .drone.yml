@@ -1,10 +1,28 @@
-kind: pipeline
-name: drone
-
 workspace:
   base: /go
   path: src/redissyncer-portal
 
+kind: pipeline
+type: ssh
+name: stopserver
+
+server:
+  host:
+    - 10.0.0.21
+    - 10.0.0.22
+    - 10.0.0.23
+  user: root
+  port: 22
+  ssh_key: @/root/.ssh/id_rsa
+steps:
+  - name: stop
+    commands:
+      - /root/redissyncer-portal/redissyncer-portal stop
+
+---
+kind: pipeline
+type: docker
+name: deploy
 steps:
   - name: build
     image: golang
@@ -12,19 +30,25 @@ steps:
       # - go mod tidy
       #- go mod vendor
       - go build -o redissyncer-portal
-      
+
     environment:
       GO111MODULE: on
       GOPROXY: https://goproxy.cn
 
-  - name: scp bin file
+  - name: publish
     image: appleboy/drone-scp
     settings:
       host:
+        - 10.0.0.21
+        - 10.0.0.22
         - 10.0.0.23
-      user: root 
+      user: root
       port: 22
       password: Git785230
-      target: /tmp
+      target: /root/redissyncer-portal
       source: redissyncer-portal
+depends_on:
+  - stopserver
+
+
 
