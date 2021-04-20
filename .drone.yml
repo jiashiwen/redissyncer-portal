@@ -26,7 +26,7 @@ steps:
       username: root
       key_path: ./id_rsa
       script:
-        - echo "test ssh"
+        - /root/redissyncer-portal/redissyncer-portal stop
 
   - name: publish
     image: appleboy/drone-scp
@@ -41,6 +41,17 @@ steps:
       target: /root/redissyncer-portal
       source: redissyncer-portal
 
+  - name: startserver
+    image: appleboy/drone-ssh
+    settings:
+      host:
+        - 10.0.0.21
+        - 10.0.0.22
+        - 10.0.0.23
+      username: root
+      key_path: ./id_rsa
+      script:
+        - /root/redissyncer-portal/redissyncer-portal start -d
 
 
 
