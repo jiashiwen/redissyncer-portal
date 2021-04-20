@@ -43,7 +43,8 @@ server:
 steps:
   - name: stop
     commands:
-      - /root/redissyncer-portal/redissyncer-portal stop
+      #- /root/redissyncer-portal/redissyncer-portal stop
+      - echo "exec ssh command"
 
 ---
 kind: pipeline
