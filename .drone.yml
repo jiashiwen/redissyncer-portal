@@ -9,8 +9,8 @@ steps:
   - name: build
     image: golang
     commands:
-      - go mod tidy
-      - go mod vendor
+      # - go mod tidy
+      #- go mod vendor
       - go build -o redissyncer-portal
       
     environment:
