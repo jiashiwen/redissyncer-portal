@@ -1,0 +1,30 @@
+kind: pipeline
+name: drone
+
+workspace:
+  base: /go
+  path: src/redissyncer-portal
+
+steps:
+  - name: build
+    image: golang
+    commands:
+      - go mod tidy
+      - go mod vendor
+      - go build -o redissyncer-portal
+      
+    environment:
+      GO111MODULE: on
+      GOPROXY: https://goproxy.cn
+
+  - name: scp bin file
+    image: appleboy/drone-scp
+    settings:
+      host:
+        - 10.0.1.23
+      user: root 
+      port: 22
+      password: Git785230
+      target: /tmp
+      source: redissyncer-portal
+
