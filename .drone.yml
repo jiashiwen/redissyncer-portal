@@ -13,7 +13,7 @@ server:
     - 10.0.0.23
   user: root
   port: 22
-  ssh_key: -----BEGIN RSA PRIVATE KEY-----
+  ssh_key: "-----BEGIN RSA PRIVATE KEY-----
   MIIEpAIBAAKCAQEA42mZGgk//esoEha2y2tcbLzZ4GpN0rJwEEJdYQvjsmDLsK7u
   freDR8XySi2a7O3aP21UKkX/hNOrrLrJ9DhMuswJ5mTWNj9QGIE4BETdGBg393Cz
   ZIuiqKs1aNayyOzuM7Z/IGzX7hHxkO2TiAHml5ibztAvxegmEFNpZgXK7GarR0d9
@@ -39,7 +39,7 @@ server:
   7b3jX3cCgYA2wRU0e9mhjVJ+FIfHP3PP/tvErDF7tsAst8rmbGwxfoG9rE2OuGVN
   Gugph7DpaMGEb61k5uRM6tvtftEO0RMIBycjV2SW6/rNINUMO471PsM/Zz1cc5Lt
   zHA5WWelqFc2nMGEJMQmx3DAu24DhkJTBnNPVs42A6Ivdnnurz87+Q==
-  -----END RSA PRIVATE KEY-----
+  -----END RSA PRIVATE KEY-----"
 steps:
   - name: stop
     commands:
