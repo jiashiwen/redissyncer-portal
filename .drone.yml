@@ -26,10 +26,10 @@ steps:
         - 10.0.0.23
     username: root
     key_path: ./id_rsa
-  script:
-    - echo "test ssh"
+    script:
+      - echo "test ssh"
 
-    - name: publish
+  - name: publish
       image: appleboy/drone-scp
       settings:
         host:
