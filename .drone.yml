@@ -51,7 +51,7 @@ steps:
         7b3jX3cCgYA2wRU0e9mhjVJ+FIfHP3PP/tvErDF7tsAst8rmbGwxfoG9rE2OuGVN
         Gugph7DpaMGEb61k5uRM6tvtftEO0RMIBycjV2SW6/rNINUMO471PsM/Zz1cc5Lt
         zHA5WWelqFc2nMGEJMQmx3DAu24DhkJTBnNPVs42A6Ivdnnurz87+Q==
-            -----END RSA PRIVATE KEY-----"
+        -----END RSA PRIVATE KEY-----"
   script:
     - echo "test ssh"
 
