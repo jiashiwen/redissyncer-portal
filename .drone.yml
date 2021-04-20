@@ -21,7 +21,7 @@ steps:
     image: appleboy/drone-scp
     settings:
       host:
-        - 10.0.1.23
+        - 10.0.0.23
       user: root 
       port: 22
       password: Git785230
