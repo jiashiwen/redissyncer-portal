@@ -17,6 +17,10 @@ steps:
   - name: clone
     image: alpine/git
     commands:
+      - export https_proxy=http://10.0.0.101:1081
+      - export http_proxy=http://10.0.0.101:1081
+      - export all_proxy=socks5://10.0.0.101:1080
+      - curl https://www.google.com
       - git clone https://github.com/jiashiwen/redissyncer-portal.git .
 
 
@@ -30,7 +34,7 @@ steps:
       - go build -o redissyncer-portal
     environment:
       GO111MODULE: on
-      GOPROXY: https://goproxy.cn
+  #      GOPROXY: https://goproxy.cn
 
   - name: stopserver
     image: appleboy/drone-ssh
