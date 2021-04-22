@@ -2,7 +2,7 @@ kind: pipeline
 type: docker
 name: deploy
 workspace:
-  base: /go
+  base: go
   path: src/redissyncer-portal
 steps:
   - name: build
