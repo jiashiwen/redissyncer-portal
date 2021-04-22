@@ -20,7 +20,6 @@ steps:
       - export all_proxy=socks5://127.0.0.1:1080
       - curl https://www.facebook.com
       - go build -o redissyncer-portal
-    network_mode: host
     environment:
       GO111MODULE: on
       GOPROXY: https://goproxy.cn
