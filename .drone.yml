@@ -1,63 +1,65 @@
+---
 kind: pipeline
 type: docker
 name: deploy
+
+platform:
+  os: linux
+  arch: amd64
 
 workspace:
   base: go
   path: src/redissyncer-portal
 
 steps:
-  - name: build
-    image: golang
-    network_mode: host
-    commands:
-      # - go mod tidy
-      #- go mod vendor
-      - export https_proxy=http://127.0.0.1:1081
-      - export http_proxy=http://127.0.0.1:1081
-      - export all_proxy=socks5://127.0.0.1:1080
-      - curl https://www.facebook.com
-      - go build -o redissyncer-portal
-    environment:
-      GO111MODULE: on
-      GOPROXY: https://goproxy.cn
+- name: build
+  image: golang
+  commands:
+  - export https_proxy=http://127.0.0.1:1081
+  - export http_proxy=http://127.0.0.1:1081
+  - export all_proxy=socks5://127.0.0.1:1080
+  - curl https://www.facebook.com
+  - go build -o redissyncer-portal
+  network_mode: host
+  environment:
+    GO111MODULE: on
+    GOPROXY: https://goproxy.cn
 
-  - name: stopserver
-    image: appleboy/drone-ssh
-    settings:
-      host:
-        - 10.0.0.21
-        - 10.0.0.22
-        - 10.0.0.23
-      username: root
-      key_path: ./id_rsa
-      script:
-        - /root/redissyncer-portal/redissyncer-portal stop
+- name: stopserver
+  image: appleboy/drone-ssh
+  settings:
+    host:
+    - 10.0.0.21
+    - 10.0.0.22
+    - 10.0.0.23
+    key_path: ./id_rsa
+    script:
+    - /root/redissyncer-portal/redissyncer-portal stop
+    username: root
 
-  - name: publish
-    image: appleboy/drone-scp
-    settings:
-      host:
-        - 10.0.0.21
-        - 10.0.0.22
-        - 10.0.0.23
-      user: root
-      port: 22
-      password: Git785230
-      target: /root/redissyncer-portal
-      source: redissyncer-portal
+- name: publish
+  image: appleboy/drone-scp
+  settings:
+    host:
+    - 10.0.0.21
+    - 10.0.0.22
+    - 10.0.0.23
+    password: Git785230
+    port: 22
+    source: redissyncer-portal
+    target: /root/redissyncer-portal
+    user: root
 
-  - name: startserver
-    image: appleboy/drone-ssh
-    settings:
-      host:
-        - 10.0.0.21
-        - 10.0.0.22
-        - 10.0.0.23
-      username: root
-      key_path: ./id_rsa
-      script:
-        - /root/redissyncer-portal/redissyncer-portal start -d
+- name: startserver
+  image: appleboy/drone-ssh
+  settings:
+    host:
+    - 10.0.0.21
+    - 10.0.0.22
+    - 10.0.0.23
+    key_path: ./id_rsa
+    script:
+    - /root/redissyncer-portal/redissyncer-portal start -d
+    username: root
 
-
-
+...
