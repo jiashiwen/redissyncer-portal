@@ -12,7 +12,7 @@ steps:
       # - go mod tidy
       #- go mod vendor
       - export
-      - curl https://www.baidu.com
+      - curl https://www.facebook.com
       - go build -o redissyncer-portal
     environment:
       GO111MODULE: on
