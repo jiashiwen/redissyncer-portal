@@ -1,13 +1,13 @@
-workspace:
-  base: /go
-  path: src/redissyncer-portal
-
 kind: pipeline
 type: docker
 name: deploy
+workspace:
+  base: /go
+  path: src/redissyncer-portal
 steps:
   - name: build
     image: golang
+    network_mode: host
     commands:
       # - go mod tidy
       #- go mod vendor
