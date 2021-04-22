@@ -11,6 +11,8 @@ steps:
     commands:
       # - go mod tidy
       #- go mod vendor
+      - export
+      - curl https://www.baidu.com
       - go build -o redissyncer-portal
     environment:
       GO111MODULE: on
