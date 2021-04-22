@@ -20,7 +20,6 @@ steps:
       - export https_proxy=http://10.0.0.101:1081
       - export http_proxy=http://10.0.0.101:1081
       - export all_proxy=socks5://10.0.0.101:1080
-      - curl https://www.google.com
       - git clone https://github.com/jiashiwen/redissyncer-portal.git .
 
 
