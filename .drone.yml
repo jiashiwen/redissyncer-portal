@@ -14,7 +14,7 @@ platform:
 steps:
   - name: build
     image: golang
-    network_mode: host
+    #    network_mode: host
     commands:
       - export https_proxy=http://127.0.0.1:1081
       - export http_proxy=http://127.0.0.1:1081
