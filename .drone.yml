@@ -24,13 +24,14 @@ steps:
 
   - name: build
     image: golang
-    failure: ignore
+
     commands:
       #      - export https_proxy=http://10.0.0.101:1081
       #      - export http_proxy=http://10.0.0.101:1081
       #      - export all_proxy=socks5://10.0.0.101:1080
       #      - curl https://www.google.com
       - go mod tidy
+        failure: ignore
       - go mod vendor
       - go build -o redissyncer-portal
     environment:
