@@ -22,17 +22,33 @@ steps:
       #      - export all_proxy=socks5://10.0.0.101:1080
       - git clone -v https://github.com/jiashiwen/redissyncer-portal.git .
 
+  - name: tidy
+    image: golang
+    failure: ignore
+    commands:
+      - go mod tidy
+    environment:
+      GO111MODULE: on
+      GOPROXY: https://goproxy.cn
+
   - name: build
     image: golang
+    failure: ignore
+    commands:
+      - go mod vendor
+    environment:
+      GO111MODULE: on
+      GOPROXY: https://goproxy.cn
 
+  - name: build
+    image: golang
     commands:
       #      - export https_proxy=http://10.0.0.101:1081
       #      - export http_proxy=http://10.0.0.101:1081
       #      - export all_proxy=socks5://10.0.0.101:1080
       #      - curl https://www.google.com
-      - go mod tidy
-        failure: ignore
-      - go mod vendor
+      #      - go mod tidy
+      #      - go mod vendor
       - go build -o redissyncer-portal
     environment:
       GO111MODULE: on
