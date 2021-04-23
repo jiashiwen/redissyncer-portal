@@ -18,7 +18,7 @@ func InitBaseRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
 }
 
 func InitTaskRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
-	TaskRouter := Router.Group("task")
+	TaskRouter := Router.Group("api/task")
 	{
 		TaskRouter.POST("create", api.TaskCreate)
 		TaskRouter.POST("start", api.TaskStart)
@@ -35,7 +35,7 @@ func InitTaskRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
 }
 
 func InitNodeRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
-	NodeRouter := Router.Group("node")
+	NodeRouter := Router.Group("api/node")
 	{
 		NodeRouter.POST("listall", api.NodeListAll)
 		NodeRouter.POST("remove", api.RemoveNode)
