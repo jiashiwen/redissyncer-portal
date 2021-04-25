@@ -204,7 +204,7 @@ func RemoveTask(taskID string) error {
 		//del TasksOffset
 		clientv3.OpDelete(global.TasksOffsetPrefix+taskStatus.TaskID),
 		//del TasksName
-		clientv3.OpDelete(global.TasksNamePrefix+taskStatus.TaskName),
+		clientv3.OpDelete(global.TasksNamePrefix+taskStatus.TaskName+"/"+taskStatus.TaskID),
 		//del TasksType
 		clientv3.OpDelete(global.TasksTypePrefix+strconv.Itoa(taskStatus.TaskType)+"/"+taskStatus.TaskID),
 		//del TasksBigkey
@@ -436,7 +436,7 @@ func GetTaskStatusByName(taskNames []string) []*response.TaskStatusResultByName 
 	var taskStatusByNameArray []*response.TaskStatusResultByName
 	var taskIds []string
 	for _, name := range taskNames {
-		resp, err := global.GetEtcdClient().Get(context.Background(), global.TasksNamePrefix+name)
+		resp, err := global.GetEtcdClient().Get(context.Background(), global.TasksNamePrefix+name, clientv3.WithPrefix())
 		if err != nil {
 			errorCode := global.Error{
 				Code: global.ErrorSystemError,
