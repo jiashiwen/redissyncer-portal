@@ -432,8 +432,8 @@ func GetTaskStatusByIDs(ids []string) []*response.TaskStatusResult {
 }
 
 // GetTaskStatusByName 根据名字查找任务状态
-func GetTaskStatusByName(taskNames []string) []*response.TaskStatusResultByName {
-	var taskStatusByNameArray []*response.TaskStatusResultByName
+func GetTaskStatusByName(taskNames []string) []*response.TaskStatusResult {
+	var taskStatusByNameArray []*response.TaskStatusResult
 	var taskIds []string
 	for _, name := range taskNames {
 		resp, err := global.GetEtcdClient().Get(context.Background(), global.TasksNamePrefix+name, clientv3.WithPrefix())
@@ -473,18 +473,22 @@ func GetTaskStatusByName(taskNames []string) []*response.TaskStatusResultByName 
 		}
 	}
 
-	for _, v := range GetTaskStatusByIDs(taskIds) {
-		taskStatusByName := response.TaskStatusResultByName{
-			TaskName:   v.TaskStatus.TaskName,
-			Errors:     v.Errors,
-			TaskStatus: v.TaskStatus,
-		}
-		global.RSPLog.Sugar().Info(taskStatusByName)
-		taskStatusByNameArray = append(taskStatusByNameArray, &taskStatusByName)
-	}
+	//for _, v := range GetTaskStatusByIDs(taskIds) {
+	//	taskStatusByName := response.TaskStatusResult
+	//	{
+	//	TaskName:
+	//		v.TaskStatus.TaskName,
+	//			Errors:     v.Errors,
+	//		TaskStatus: v.TaskStatus,
+	//	}
+	//	global.RSPLog.Sugar().Info(taskStatusByName)
+	//	taskStatusByNameArray = append(taskStatusByNameArray, &taskStatusByName)
+	//}
+	//
+	//global.RSPLog.Sugar().Info("taskstatusbynamearry:", taskStatusByNameArray)
+	//return taskStatusByNameArray
 
-	global.RSPLog.Sugar().Info("taskstatusbynamearry:", taskStatusByNameArray)
-	return taskStatusByNameArray
+	return GetTaskStatusByIDs(taskIds)
 }
 
 // GetTaskStatusByGroupIDs 根据groupid获取任务状态
