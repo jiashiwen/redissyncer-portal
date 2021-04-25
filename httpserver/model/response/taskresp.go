@@ -14,9 +14,9 @@ type TaskStatusResult struct {
 }
 
 type TaskStatusResultByName struct {
-	TaskName   string        `map:"taskId" json:"taskId" yaml:"taskId"`
-	Errors     *global.Error `map:"errors" json:"errors" yaml:"errors"`
-	TaskStatus *global.TaskStatus[] `map:"taskStatus" json:"taskStatus" yaml:"taskStatus"`
+	TaskName   string             `map:"taskId" json:"taskId" yaml:"taskId"`
+	Errors     *global.Error      `map:"errors" json:"errors" yaml:"errors"`
+	TaskStatus *global.TaskStatus `map:"taskStatus" json:"taskStatus" yaml:"taskStatus"`
 }
 
 type TaskStatusResultByGroupID struct {
