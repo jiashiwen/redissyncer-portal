@@ -476,13 +476,26 @@ func GetTaskStatusByName(taskNames []string) []*response.TaskStatusResultByName 
 	global.RSPLog.Sugar().Info(tasks)
 	for _, v := range tasks {
 		global.RSPLog.Sugar().Info(v.TaskStatus)
+		if v.TaskStatus == nil {
+			err := global.Error{
+				Code: global.ErrorTaskStatusIsNil,
+				Msg:  global.ErrorTaskStatusIsNil.String() + ":" + v.TaskID,
+			}
+			taskStatusByName := response.TaskStatusResultByName{
+				TaskName: v.TaskStatus.TaskName,
+				Errors:   &err,
+			}
+			global.RSPLog.Sugar().Error(err)
+			taskStatusByNameArray = append(taskStatusByNameArray, &taskStatusByName)
+			continue
+		}
 		taskStatusByName := response.TaskStatusResultByName{
 			TaskName:
 			v.TaskStatus.TaskName,
 			Errors:     v.Errors,
 			TaskStatus: v.TaskStatus,
 		}
-		global.RSPLog.Sugar().Info(taskStatusByName)
+
 		taskStatusByNameArray = append(taskStatusByNameArray, &taskStatusByName)
 	}
 

@@ -13,7 +13,8 @@ const (
 	ErrorNodeIsRunning      ErrorCode = 40002
 	ErrorNodeNotAlive       ErrorCode = 40003
 	ErrorTaskNotExists      ErrorCode = 50001
-	ErrorTaskGroupNotExists ErrorCode = 50002
+	ErrorTaskStatusIsNil    ErrorCode = 50002
+	ErrorTaskGroupNotExists ErrorCode = 50003
 )
 
 func (code ErrorCode) String() string {
@@ -29,6 +30,8 @@ func (code ErrorCode) String() string {
 	case 50001:
 		return "task not exists"
 	case 50002:
+		return "task status is nil"
+	case 50003:
 		return "task group not exists"
 	default:
 		return ""
