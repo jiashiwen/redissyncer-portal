@@ -473,6 +473,8 @@ func GetTaskStatusByName(taskNames []string) []*response.TaskStatusResultByName 
 		}
 	}
 
+	global.RSPLog.Sugar().Info(taskIds)
+
 	for _, v := range GetTaskStatusByIDs(taskIds) {
 		taskStatusByName := response.TaskStatusResultByName{
 			TaskName:   v.TaskStatus.TaskName,
@@ -481,7 +483,7 @@ func GetTaskStatusByName(taskNames []string) []*response.TaskStatusResultByName 
 		}
 		taskStatusByNameArray = append(taskStatusByNameArray, &taskStatusByName)
 	}
-	global.RSPLog.Sugar().Info("GetTaskStatusByName")
+
 	global.RSPLog.Sugar().Info(taskStatusByNameArray)
 	return taskStatusByNameArray
 }
