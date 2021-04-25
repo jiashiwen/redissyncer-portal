@@ -170,7 +170,7 @@ type TaskStatus struct {
 	TaskName           string   `mapstructure:"taskName" json:"taskName" yaml:"taskName"`
 	TaskType           int      `mapstructure:"tasktype" json:"tasktype" yaml:"tasktype"`
 	TimeDeviation      int64    `mapstructure:"timeDeviation" json:"timeDeviation" yaml:"timeDeviation"`
-	UpdateTime         int64    `mapstructure:"updateTime" json:"updateTime" yaml:"updateTime"`
+	UpdateTime         string   `mapstructure:"updateTime" json:"updateTime" yaml:"updateTime"`
 }
 
 type TasksOffset struct {
