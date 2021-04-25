@@ -138,6 +138,8 @@ func TaskListByNames(c *gin.Context) {
 	}
 
 	resp := service.GetTaskStatusByName(namesJSON.TaskNames)
+
+	global.RSPLog.Sugar().Info(resp)
 	c.JSON(http.StatusOK, resp)
 
 }
