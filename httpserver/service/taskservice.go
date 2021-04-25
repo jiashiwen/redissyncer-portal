@@ -483,7 +483,7 @@ func GetTaskStatusByName(taskNames []string) []*response.TaskStatusResultByName 
 		taskStatusByNameArray = append(taskStatusByNameArray, &taskStatusByName)
 	}
 
-	global.RSPLog.Sugar().Info(taskStatusByNameArray)
+	global.RSPLog.Sugar().Info("taskstatusbynamearry:", taskStatusByNameArray)
 	return taskStatusByNameArray
 }
 
