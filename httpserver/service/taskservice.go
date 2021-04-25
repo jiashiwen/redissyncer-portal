@@ -432,8 +432,8 @@ func GetTaskStatusByIDs(ids []string) []*response.TaskStatusResult {
 }
 
 // GetTaskStatusByName 根据名字查找任务状态
-func GetTaskStatusByName(taskNames []string) []*response.TaskStatusResultByName {
-	var taskStatusByNameArray []*response.TaskStatusResultByName
+func GetTaskStatusByName(taskNames []string) []response.TaskStatusResultByName {
+	var taskStatusByNameArray []response.TaskStatusResultByName
 	var taskIds []string
 	for _, name := range taskNames {
 		resp, err := global.GetEtcdClient().Get(context.Background(), global.TasksNamePrefix+name, clientv3.WithPrefix())
@@ -447,7 +447,7 @@ func GetTaskStatusByName(taskNames []string) []*response.TaskStatusResultByName 
 				Errors:     &errorCode,
 				TaskStatus: nil,
 			}
-			taskStatusByNameArray = append(taskStatusByNameArray, &taskStatusByName)
+			taskStatusByNameArray = append(taskStatusByNameArray, taskStatusByName)
 			global.RSPLog.Sugar().Error(err)
 			continue
 		}
@@ -462,7 +462,7 @@ func GetTaskStatusByName(taskNames []string) []*response.TaskStatusResultByName 
 				Errors:     &errorCode,
 				TaskStatus: nil,
 			}
-			taskStatusByNameArray = append(taskStatusByNameArray, &taskStatusByName)
+			taskStatusByNameArray = append(taskStatusByNameArray, taskStatusByName)
 			continue
 		}
 
@@ -486,7 +486,7 @@ func GetTaskStatusByName(taskNames []string) []*response.TaskStatusResultByName 
 				Errors:   &err,
 			}
 			global.RSPLog.Sugar().Error(err)
-			taskStatusByNameArray = append(taskStatusByNameArray, &taskStatusByName)
+			taskStatusByNameArray = append(taskStatusByNameArray, taskStatusByName)
 			continue
 		}
 		taskStatusByName := response.TaskStatusResultByName{
@@ -496,7 +496,7 @@ func GetTaskStatusByName(taskNames []string) []*response.TaskStatusResultByName 
 			TaskStatus: v.TaskStatus,
 		}
 
-		taskStatusByNameArray = append(taskStatusByNameArray, &taskStatusByName)
+		taskStatusByNameArray = append(taskStatusByNameArray, taskStatusByName)
 	}
 
 	global.RSPLog.Sugar().Info("taskstatusbynamearry:", taskStatusByNameArray)
