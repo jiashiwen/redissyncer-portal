@@ -14,7 +14,7 @@ type TaskStatusResult struct {
 }
 
 type TaskStatusResultByName struct {
-	TaskName   string             `map:"taskId" json:"taskId" yaml:"taskId"`
+	TaskName   string             `map:"taskName" json:"taskName" yaml:"taskName"`
 	Errors     *global.Error      `map:"errors" json:"errors" yaml:"errors"`
 	TaskStatus *global.TaskStatus `map:"taskStatus" json:"taskStatus" yaml:"taskStatus"`
 }

@@ -488,8 +488,7 @@ func GetTaskStatusByName(taskNames []string) []response.TaskStatusResultByName {
 			continue
 		}
 		taskStatusByName := response.TaskStatusResultByName{
-			TaskName:
-			v.TaskStatus.TaskName,
+			TaskName:   v.TaskStatus.TaskName,
 			Errors:     v.Errors,
 			TaskStatus: v.TaskStatus,
 		}
