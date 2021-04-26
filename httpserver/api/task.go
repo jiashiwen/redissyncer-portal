@@ -137,10 +137,12 @@ func TaskListByNames(c *gin.Context) {
 		return
 	}
 
+	var ByName = make(map[string]interface{})
 	resp := service.GetTaskStatusByName(namesJSON.TaskNames)
-
+	ByName["result"] = resp
 	global.RSPLog.Sugar().Info(resp)
-	c.JSON(http.StatusOK, resp)
+	//c.JSON(http.StatusOK, resp)
+	c.JSON(http.StatusOK, ByName)
 
 }
 
