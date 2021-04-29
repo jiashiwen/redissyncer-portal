@@ -580,6 +580,7 @@ func GetAllTaskStatus(model model.TaskListAll) response.AllTaskStatusResult {
 				Msg:  err.Error(),
 			}
 			result.Errors = append(result.Errors, errResult)
+			global.RSPLog.Sugar().Error(err)
 			return result
 		}
 	}
@@ -598,6 +599,7 @@ func GetAllTaskStatus(model model.TaskListAll) response.AllTaskStatusResult {
 					Msg:  err.Error(),
 				}
 				result.Errors = append(result.Errors, &errResult)
+				global.RSPLog.Sugar().Error(err)
 				return result
 			}
 			//  http请求 cursor所在node 返回数据
@@ -610,6 +612,7 @@ func GetAllTaskStatus(model model.TaskListAll) response.AllTaskStatusResult {
 					Msg:  err.Error(),
 				}
 				result.Errors = append(result.Errors, &errResult)
+				global.RSPLog.Sugar().Error(err)
 				return result
 			}
 			req.Body = string(body)
@@ -620,6 +623,7 @@ func GetAllTaskStatus(model model.TaskListAll) response.AllTaskStatusResult {
 					Msg:  err.Error(),
 				}
 				result.Errors = append(result.Errors, &errResult)
+				global.RSPLog.Sugar().Error(err)
 				return result
 			}
 
@@ -633,6 +637,7 @@ func GetAllTaskStatus(model model.TaskListAll) response.AllTaskStatusResult {
 			Msg:  global.ErrorCursorFinished.String(),
 		}
 		result.Errors = append(result.Errors, errResult)
+		global.RSPLog.Sugar().Error(err)
 		return result
 	}
 
@@ -643,6 +648,7 @@ func GetAllTaskStatus(model model.TaskListAll) response.AllTaskStatusResult {
 			Msg:  err.Error(),
 		}
 		result.Errors = append(result.Errors, errResult)
+		global.RSPLog.Sugar().Error(err)
 		return result
 	}
 
@@ -656,6 +662,7 @@ func GetAllTaskStatus(model model.TaskListAll) response.AllTaskStatusResult {
 				Msg:  err.Error(),
 			}
 			taskStatusArray = append(taskStatusArray, &taskStatusResult)
+			global.RSPLog.Sugar().Error(err)
 			continue
 		}
 
@@ -673,6 +680,7 @@ func GetAllTaskStatus(model model.TaskListAll) response.AllTaskStatusResult {
 			Msg:  err.Error(),
 		}
 		result.Errors = append(result.Errors, &errResult)
+		global.RSPLog.Sugar().Error(err)
 	}
 
 	// 提交etcd 服务器 '/cursor/{queryid}'
@@ -682,6 +690,7 @@ func GetAllTaskStatus(model model.TaskListAll) response.AllTaskStatusResult {
 			Msg:  err.Error(),
 		}
 		result.Errors = append(result.Errors, &errResult)
+		global.RSPLog.Sugar().Error(err)
 	}
 
 	result.LastPage = cursor.EtcdPaginte.LastPage
