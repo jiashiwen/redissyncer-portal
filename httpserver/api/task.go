@@ -97,18 +97,16 @@ func TaskListAll(c *gin.Context) {
 
 	all := service.GetAllTaskStatus(listAllJSON)
 
-	var decodedMap map[int]string
-	decoder := gob.NewDecoder(buf)
-
 	buf := new(bytes.Buffer)
-	decoder.Decode(&decodedMap)
+	decoder := gob.NewDecoder(buf)
+	decoder.Decode(all)
 	//if err != nil {
 	//	panic(err)
 	//}
 
-	fmt.Printf("%#v\n", decodedMap)
+	fmt.Printf("%#v\n", decoder)
 
-	c.JSON(http.StatusOK, decodedMap)
+	c.JSON(http.StatusOK, decoder)
 }
 
 func TaskListByNodeID(c *gin.Context) {
