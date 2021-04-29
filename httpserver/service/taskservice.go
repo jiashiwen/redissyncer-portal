@@ -637,7 +637,7 @@ func GetAllTaskStatus(model model.TaskListAll) response.AllTaskStatusResult {
 			Msg:  global.ErrorCursorFinished.String(),
 		}
 		result.Errors = append(result.Errors, errResult)
-		global.RSPLog.Sugar().Error(err)
+		global.RSPLog.Sugar().Error(errResult)
 		return result
 	}
 
