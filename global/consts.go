@@ -128,7 +128,7 @@ type TaskStatus struct {
 	BatchSize          int64       `mapstructure:"batchSize" json:"batchSize" yaml:"batchSize"`
 	CommandFilter      string      `mapstructure:"commandFilter" json:"commandFilter" yaml:"commandFilter"`
 	CreateTime         string      `mapstructure:"createTime" json:"createTime" yaml:"createTime"`
-	DBMapper           interface{} `mapstructure:"dbMapper" json:"dbMapper" yaml:"dbMapper"`
+	DBMapper           map[int]int `mapstructure:"dbMapper" json:"dbMapper" yaml:"dbMapper"`
 	ErrorCount         int64       `mapstructure:"errorCount" json:"errorCount" yaml:"errorCount"`
 	ExpandJSON         string      `mapstructure:"expandJson" json:"expandJson" yaml:"expandJson"`
 	FileAddress        string      `mapstructure:"fileAddress" json:"fileAddress" yaml:"fileAddress"`
