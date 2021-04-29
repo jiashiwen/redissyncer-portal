@@ -1,12 +1,9 @@
 package service
 
 import (
-	"bytes"
 	"context"
-	"encoding/gob"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"redissyncer-portal/commons"
 	"redissyncer-portal/global"
 	"redissyncer-portal/httpquerry"
@@ -664,15 +661,14 @@ func GetAllTaskStatus(model model.TaskListAll) response.AllTaskStatusResult {
 				Code: global.ErrorSystemError,
 				Msg:  err.Error(),
 			}
-			//decode taskstatus
-			buf := new(bytes.Buffer)
-			decoder := gob.NewDecoder(buf)
-			decoder.Decode(v.Value)
-			//if err != nil {
-			//	panic(err)
-			//}
-
-			fmt.Printf("%#v\n", decoder)
+			////decode taskstatus
+			//buf := new(bytes.Buffer)
+			//decoder := gob.NewDecoder(buf)
+			//decoder.Decode(v.Value)
+			////if err != nil {
+			////	panic(err)
+			////}
+			//fmt.Printf("%#v\n", decoder)
 			taskStatusArray = append(taskStatusArray, &taskStatusResult)
 			global.RSPLog.Sugar().Error(err)
 			continue
