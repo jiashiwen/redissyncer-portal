@@ -1,6 +1,9 @@
 package api
 
 import (
+	"bytes"
+	"encoding/gob"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"redissyncer-portal/global"
@@ -94,7 +97,18 @@ func TaskListAll(c *gin.Context) {
 
 	all := service.GetAllTaskStatus(listAllJSON)
 
-	c.JSON(http.StatusOK, all)
+	var decodedMap map[int]string
+	decoder := gob.NewDecoder(buf)
+
+	buf := new(bytes.Buffer)
+	decoder.Decode(&decodedMap)
+	//if err != nil {
+	//	panic(err)
+	//}
+
+	fmt.Printf("%#v\n", decodedMap)
+
+	c.JSON(http.StatusOK, decodedMap)
 }
 
 func TaskListByNodeID(c *gin.Context) {

@@ -626,7 +626,7 @@ func GetAllTaskStatus(model model.TaskListAll) response.AllTaskStatusResult {
 				global.RSPLog.Sugar().Error(err)
 				return result
 			}
-
+			
 			json.Unmarshal([]byte(resp), result)
 			return result
 		}
