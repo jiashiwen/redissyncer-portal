@@ -331,6 +331,20 @@ func GenGlobalUniqID(idseed string, size int) []string {
 
 }
 
+func TestMapIntJson(T *testing.T) {
+	var status global.TaskStatus
+	taskstatusstr := `{"afresh":true,"allKeyCount":2839,"autostart":true,"batchSize":1000,"commandFilter":"","createTime":"2021-04-29 11:57:20","dbMapper":"{0:3,2:6,3:5,8:10}","dbMapping":{0:3,2:6,3:5,8:10},"errorCount":1,"expandJson":"{\"brokenReason\":\"\"}","fileAddress":"","filterType":"NONE","groupId":"ABC60703B3964BBC860919A7FDE7EDC3","id":"ABC60703B3964BBC860919A7FDE7EDC3","keyFilter":"","lastKeyCommitTime":1619672241316,"lastKeyUpdateTime":1619672240200,"md5":"c16543e580615debd91257751586a910","nodeId":"1","offset":22585966,"offsetPlace":1,"rdbKeyCount":96,"rdbVersion":8,"realKeyCount":2839,"redisVersion":4.0,"replId":"852454a11632fe4dbe44f0238747dc6ff7be2a55","sourceAcl":false,"sourceHost":"114.67.76.82","sourceHostUris":["redis://114.67.76.82?authPassword=redistest0102"],"sourcePassword":"redistest0102","sourcePort":16374,"sourceRedisAddress":"114.67.76.82:16374","sourceRedisMasterName":"","sourceRedisType":1,"sourceSentinelAuthPassword":"","sourceUri":"redis://114.67.76.82:16374?authPassword=redistest0102","sourceUserName":"","status":7,"syncType":1,"targetAcl":false,"targetHost":"114.67.120.120","targetHostUris":["redis://114.67.120.120?authPassword=redistest0102"],"targetPassword":"redistest0102","targetPort":16374,"targetRedisAddress":"114.67.120.120:16374","targetRedisMasterName":"","targetRedisType":1,"targetSentinelAuthPassword":"","targetUri":["redis://114.67.120.120:16374?authPassword=redistest0102"],"targetUserName":"","taskId":"ABC60703B3964BBC860919A7FDE7EDC3","taskMsg":"增量同步开始","taskName":"single2singlewithdbmap","tasktype":1,"timeDeviation":0}`
+
+	err := json.Unmarshal([]byte(taskstatusstr), &status)
+
+	if err != nil {
+		T.Error(err)
+	}
+
+	fmt.Println(taskstatusstr)
+
+}
+
 func TestStatusValEqual(t *testing.T) {
 	status := global.TaskStatus{
 		Status: 6,
