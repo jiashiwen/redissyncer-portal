@@ -34,7 +34,7 @@ func TaskCreate(c *gin.Context) {
 		response.FailWithMessage(jerr.Error(), c)
 		return
 	}
-	c.JSON(http.StatusOK, json)
+	c.JSON(http.StatusOK, string(json))
 
 }
 
