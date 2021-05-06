@@ -35,7 +35,7 @@ func TaskCreate(c *gin.Context) {
 	//	return
 	//}
 	var dat map[string]interface{}
-	json.Unmarshal(resp, &dat)
+	json.Unmarshal([]byte(resp), &dat)
 	c.JSON(http.StatusOK, dat)
 
 }
