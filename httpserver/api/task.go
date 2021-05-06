@@ -1,6 +1,7 @@
 package api
 
 import (
+	json2 "encoding/json"
 	"io/ioutil"
 	"net/http"
 	"redissyncer-portal/global"
@@ -28,7 +29,12 @@ func TaskCreate(c *gin.Context) {
 
 	// c.JSON(http.StatusOK, body)
 	//c.Data(http.StatusOK, "application/json", []byte(resp))
-	c.JSON(http.StatusOK, resp)
+	json, jerr := json2.Marshal(resp)
+	if jerr != nil {
+		response.FailWithMessage(jerr.Error(), c)
+		return
+	}
+	c.JSON(http.StatusOK, json)
 
 }
 
