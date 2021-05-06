@@ -64,13 +64,13 @@ func (r *HttpRequest) ExecRequest() (string, error) {
 		return "", readErr
 	}
 
-	var dat map[string]interface{}
-	json.Unmarshal(body, &dat)
-	bodyStr, jsonErr := json.MarshalIndent(dat, "", " ")
-	if jsonErr != nil {
-		return "", jsonErr
-	}
-	return string(bodyStr), nil
+	//var dat map[string]interface{}
+	//json.Unmarshal(body, &dat)
+	//bodyStr, jsonErr := json.MarshalIndent(dat, "", " ")
+	//if jsonErr != nil {
+	//	return "", jsonErr
+	//}
+	return string(body), nil
 }
 
 //登录
