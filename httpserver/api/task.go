@@ -27,7 +27,8 @@ func TaskCreate(c *gin.Context) {
 	}
 
 	// c.JSON(http.StatusOK, body)
-	c.Data(http.StatusOK, "application/json", []byte(resp))
+	//c.Data(http.StatusOK, "application/json", []byte(resp))
+	c.JSON(http.StatusOK, resp)
 
 }
 
