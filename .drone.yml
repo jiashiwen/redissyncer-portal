@@ -25,10 +25,13 @@ steps:
   - name: build
     image: golang
     commands:
+      - export https_proxy=http://10.0.0.101:1081
+      - export http_proxy=http://10.0.0.101:1081
+      - export all_proxy=socks5://10.0.0.101:1080
       - go build -o redissyncer-portal
     environment:
       GO111MODULE: on
-      GOPROXY: https://goproxy.cn
+  #      GOPROXY: https://goproxy.cn
 
   - name: stopserver
     image: appleboy/drone-ssh
