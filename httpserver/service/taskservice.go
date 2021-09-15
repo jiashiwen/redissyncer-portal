@@ -211,6 +211,8 @@ func RemoveTask(taskID string) error {
 		clientv3.OpDelete(global.TasksBigkeyPrefix+taskStatus.TaskID, clientv3.WithPrefix()),
 		//del TasksMd5
 		clientv3.OpDelete(global.TasksMd5Prefix+taskStatus.MD5),
+		//del TaskLastKeyAcross
+		clientv3.OpDelete(global.LastKeyAcrossPrefix+taskStatus.TaskID),
 	).Commit()
 
 	if err != nil {
