@@ -29,6 +29,7 @@ func InitTaskRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
 		TaskRouter.POST("listbygroupids", api.TaskListByGroupIDs)
 		TaskRouter.POST("listbynode", api.TaskListByNodeID)
 		TaskRouter.POST("listall", api.TaskListAll)
+		TaskRouter.POST("lastkeyacross", api.TaskGetLastKeyAcross)
 	}
 
 	return TaskRouter

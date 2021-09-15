@@ -170,3 +170,15 @@ func TaskListByGroupIDs(c *gin.Context) {
 	resp := service.GetTaskStatusByGroupIDs(groupIDsJSON.GroupIDs)
 	c.JSON(http.StatusOK, resp)
 }
+
+func TaskGetLastKeyAcross(c *gin.Context) {
+	var taskIDJson model.TaskIDBody
+	if err := c.ShouldBindJSON(&taskIDJson); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	resp := service.GetLastKeyAcrossTime(taskIDJson)
+	c.JSON(http.StatusOK, resp)
+}

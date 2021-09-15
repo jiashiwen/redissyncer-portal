@@ -7,19 +7,19 @@ type TaskStatusType int
 type TaskType int
 
 const (
-	TasksTaskIDPrefix     = "/tasks/taskid/"     //TasksTaskidPrefix 任务id前缀 key:/tasks/taskid/{taskid} ;value: taskstatusjson
-	TasksNodePrefix       = "/tasks/node/"       //TasksNodePrefix key:/tasks/node/{nodeId}/{taskId}; value:{"nodeId":"xxx","taskId":"xxx"}
-	TasksGroupIDPrefix    = "/tasks/groupid/"    //TasksGroupidPrefix key:/tasks/groupid/{groupid}/{taskId};value:{"groupId":"xxx","taskId":"xxx"}
-	TasksStatusPrefix     = "/tasks/status/"     //TasksStatusPrefix key:/tasks/status/{currentstatus}/{taskid};value:{"taskId":"testId"}
-	TasksRdbversionPrefix = "/tasks/rdbversion/" //TasksRdbversionPrefix key:/tasks/rdbversion/{redisVersion}/{rdbVersion};value:{"id":1,"redis_version": "2.6","rdb_version": 6}
-	TasksOffsetPrefix     = "/tasks/offset/"     //TasksOffsetPrefix key:/tasks/offset/{taskId};value:{"replId":"xxx","replOffset":"-1"}
-	TasksNamePrefix       = "/tasks/name/"       //TasksNamePrefix key:/tasks/name/{taskname};value:{"taskId":"testId"}
-	TasksTypePrefix       = "/tasks/type/"       //TasksTypePrefix key:/tasks/type/{type}/{taskId};value:{"taskid":"xxx","groupId":"xxx","nodeId":"xxx"}
-	TasksBigkeyPrefix     = "/tasks/bigkey/"     //TasksBigkeyPrefix key:/tasks/bigkey/{taskId}/{bigKey};value:{"id":1,"taskId":"xxx","command":"xxx","command_type":"xxx"}
-	TasksMd5Prefix        = "/tasks/md5/"        // TasksMd5Prefix key:/tasks/md5/{md5};value:{"taskid":"xxx","groupId":"xxx","nodeId":"xx"}
-	NodesPrefix           = "/nodes/"            // NodesPrefix key:/nodes/{nodetype}/{nodeID};value:{"nodeaddr":"10.0.0.1","nodeport":8888,"online":true,"lastreporttime":1615275888064}
-	CursorPrefix          = "/cursor/"           // CursorPrefix key:/cursor/{qureryID};value:{"nodeaddr":"10.0.0.1","nodeport":8888,"online":true,"lastreporttime":1615275888064}
-
+	TasksTaskIDPrefix     = "/tasks/taskid/"        //TasksTaskidPrefix 任务id前缀 key:/tasks/taskid/{taskid} ;value: taskstatusjson
+	TasksNodePrefix       = "/tasks/node/"          //TasksNodePrefix key:/tasks/node/{nodeId}/{taskId}; value:{"nodeId":"xxx","taskId":"xxx"}
+	TasksGroupIDPrefix    = "/tasks/groupid/"       //TasksGroupidPrefix key:/tasks/groupid/{groupid}/{taskId};value:{"groupId":"xxx","taskId":"xxx"}
+	TasksStatusPrefix     = "/tasks/status/"        //TasksStatusPrefix key:/tasks/status/{currentstatus}/{taskid};value:{"taskId":"testId"}
+	TasksRdbversionPrefix = "/tasks/rdbversion/"    //TasksRdbversionPrefix key:/tasks/rdbversion/{redisVersion}/{rdbVersion};value:{"id":1,"redis_version": "2.6","rdb_version": 6}
+	TasksOffsetPrefix     = "/tasks/offset/"        //TasksOffsetPrefix key:/tasks/offset/{taskId};value:{"replId":"xxx","replOffset":"-1"}
+	TasksNamePrefix       = "/tasks/name/"          //TasksNamePrefix key:/tasks/name/{taskname};value:{"taskId":"testId"}
+	TasksTypePrefix       = "/tasks/type/"          //TasksTypePrefix key:/tasks/type/{type}/{taskId};value:{"taskid":"xxx","groupId":"xxx","nodeId":"xxx"}
+	TasksBigkeyPrefix     = "/tasks/bigkey/"        //TasksBigkeyPrefix key:/tasks/bigkey/{taskId}/{bigKey};value:{"id":1,"taskId":"xxx","command":"xxx","command_type":"xxx"}
+	TasksMd5Prefix        = "/tasks/md5/"           // TasksMd5Prefix key:/tasks/md5/{md5};value:{"taskid":"xxx","groupId":"xxx","nodeId":"xx"}
+	NodesPrefix           = "/nodes/"               // NodesPrefix key:/nodes/{nodetype}/{nodeID};value:{"nodeaddr":"10.0.0.1","nodeport":8888,"online":true,"lastreporttime":1615275888064}
+	CursorPrefix          = "/cursor/"              // CursorPrefix key:/cursor/{qureryID};value:{"nodeaddr":"10.0.0.1","nodeport":8888,"online":true,"lastreporttime":1615275888064}
+	LastKeyAcrossPrefix   = "/tasks/lastkeyacross/" //LastKeyAcrossPrefix key:/tasks/lastkeyacross/{taskId};value:{"lastKeyCommitTime": 1,"lastKeyUpdateTime": 1,"taskId":"xxx","groupId":"xxx"}
 )
 
 const (
@@ -130,15 +130,15 @@ type TaskStatus struct {
 	CreateTime    string      `mapstructure:"createTime" json:"createTime" yaml:"createTime"`
 	DBMapper      interface{} `mapstructure:"dbMapper" json:"dbMapper" yaml:"dbMapper"`
 	//DBMapping          interface{} `mapstructure:"dbMapping" json:"dbMapping" yaml:"dbMapping"`
-	ErrorCount         int64    `mapstructure:"errorCount" json:"errorCount" yaml:"errorCount"`
-	ExpandJSON         string   `mapstructure:"expandJson" json:"expandJson" yaml:"expandJson"`
-	FileAddress        string   `mapstructure:"fileAddress" json:"fileAddress" yaml:"fileAddress"`
-	FilterType         string   `mapstructure:"filterType" json:"filterType" yaml:"filterType"`
-	GroupID            string   `mapstructure:"groupId" json:"groupId" yaml:"groupId"`
-	ID                 string   `mapstructure:"id" json:"id" yaml:"id"`
-	KeyFilter          string   `mapstructure:"keyFilter" json:"keyFilter" yaml:"keyFilter"`
-	LastKeyCommitTime  int64    `mapstructure:"lastKeyCommitTime" json:"lastKeyCommitTime" yaml:"lastKeyCommitTime"`
-	LastKeyUpdateTime  int64    `mapstructure:"lastKeyUpdateTime" json:"lastKeyUpdateTime" yaml:"lastKeyUpdateTime"`
+	ErrorCount  int64  `mapstructure:"errorCount" json:"errorCount" yaml:"errorCount"`
+	ExpandJSON  string `mapstructure:"expandJson" json:"expandJson" yaml:"expandJson"`
+	FileAddress string `mapstructure:"fileAddress" json:"fileAddress" yaml:"fileAddress"`
+	FilterType  string `mapstructure:"filterType" json:"filterType" yaml:"filterType"`
+	GroupID     string `mapstructure:"groupId" json:"groupId" yaml:"groupId"`
+	ID          string `mapstructure:"id" json:"id" yaml:"id"`
+	KeyFilter   string `mapstructure:"keyFilter" json:"keyFilter" yaml:"keyFilter"`
+	//LastKeyCommitTime  int64    `mapstructure:"lastKeyCommitTime" json:"lastKeyCommitTime" yaml:"lastKeyCommitTime"`
+	//LastKeyUpdateTime  int64    `mapstructure:"lastKeyUpdateTime" json:"lastKeyUpdateTime" yaml:"lastKeyUpdateTime"`
 	MD5                string   `mapstructure:"md5" json:"md5" yaml:"md5"`
 	NodeID             string   `mapstructure:"nodeId" json:"nodeId" yaml:"nodeId"`
 	Offset             int64    `mapstructure:"offset" json:"offset" yaml:"offset"`
@@ -203,4 +203,12 @@ type TasksMD5Val struct {
 	TaskID  string `map:"taskId" json:"taskId" yaml:"taskId"`
 	GroupID string `map:"groupId" json:"groupId" yaml:"groupId"`
 	NodeID  string `map:"nodeId" json:"nodeId" yaml:"nodeId"`
+}
+
+// LastKeyAcross 最后一个key流过引擎的时间
+type LastKeyAcross struct {
+	LastKeyCommitTime uint64 `map:"lastKeyCommitTime" json:"lastKeyCommitTime" yaml:"lastKeyCommitTime"`
+	LastKeyUpdateTime uint64 `map:"lastKeyUpdateTime" json:"lastKeyUpdateTime" yaml:"lastKeyUpdateTime"`
+	TaskID            string `map:"taskId" json:"taskId" yaml:"taskId"`
+	GroupID           string `map:"groupId" json:"groupId" yaml:"groupId"`
 }

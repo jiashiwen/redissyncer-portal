@@ -32,3 +32,8 @@ type AllTaskStatusResult struct {
 	Errors          []*global.Error     `map:"errors" json:"errors" yaml:"errors"`
 	TaskStatusArray []*TaskStatusResult `map:"taskStatus" json:"taskStatus" yaml:"taskStatus"`
 }
+
+type LastKeyAcrossResult struct {
+	LastKeyAcross *global.LastKeyAcross `map:"lastkeyacross" json:"lastkeyacross" yaml:"lastkeyacross"`
+	Errors        *global.Error         `map:"errors" json:"errors" yaml:"errors"`
+}

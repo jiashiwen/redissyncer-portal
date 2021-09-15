@@ -15,6 +15,7 @@ const (
 	ErrorTaskNotExists      ErrorCode = 50001
 	ErrorTaskStatusIsNil    ErrorCode = 50002
 	ErrorTaskGroupNotExists ErrorCode = 50003
+	ErrorEtcdKeyNotExists   ErrorCode = 60001
 )
 
 func (code ErrorCode) String() string {
@@ -33,6 +34,8 @@ func (code ErrorCode) String() string {
 		return "task status is nil"
 	case 50003:
 		return "task group not exists"
+	case 60001:
+		return "etcd key not exists"
 	default:
 		return ""
 	}

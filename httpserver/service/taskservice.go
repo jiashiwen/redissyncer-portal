@@ -54,7 +54,7 @@ func CreateTask(body string) (string, error) {
 	return "", errors.New("no node selected")
 }
 
-//Start task
+// StartTask Start task
 func StartTask(body model.TaskStart) (string, error) {
 
 	var taskStatus global.TaskStatus
@@ -65,7 +65,7 @@ func StartTask(body model.TaskStart) (string, error) {
 		return "", err
 	}
 
-	//判断taskid是否存在
+	//判断taskId是否存在
 	if len(statusResp.Kvs) == 0 {
 		return "", errors.New("taskid not exists")
 	}
@@ -109,7 +109,7 @@ func StartTask(body model.TaskStart) (string, error) {
 
 }
 
-//Stop task by task ids
+// StopTaskById Stop task by task ids
 func StopTaskById(taskID string) (string, error) {
 	var taskStatus global.TaskStatus
 	//通过taskID 获取TaskStatus
@@ -165,7 +165,7 @@ func StopTaskById(taskID string) (string, error) {
 
 }
 
-//RemoveTasks
+// RemoveTask 删除任务
 func RemoveTask(taskID string) error {
 
 	var taskStatus global.TaskStatus
@@ -821,6 +821,41 @@ func TaskStatusByNodeID(model model.TaskListByNode) response.AllTaskStatusResult
 	result.CurrentPage = cursor.CurrentPage
 	result.LastPage = cursor.EtcdPaginte.LastPage
 	result.TaskStatusArray = taskStatusArray
+	return result
+
+}
+
+func GetLastKeyAcrossTime(model model.TaskIDBody) response.LastKeyAcrossResult {
+	var result response.LastKeyAcrossResult
+	resp, err := global.GetEtcdClient().Get(context.Background(), global.LastKeyAcrossPrefix+model.TaskID)
+	if err != nil {
+		errResult := global.Error{
+			Code: global.ErrorSystemError,
+			Msg:  err.Error(),
+		}
+		result.Errors = &errResult
+		return result
+	}
+
+	if len(resp.Kvs) == 0 {
+		errorCode := global.Error{
+			Code: global.ErrorEtcdKeyNotExists,
+			Msg:  global.ErrorEtcdKeyNotExists.String(),
+		}
+		result.Errors = &errorCode
+		return result
+	}
+
+	lastKeyAcross := global.LastKeyAcross{}
+	if err := json.Unmarshal(resp.Kvs[0].Value, lastKeyAcross); err != nil {
+		errorCode := global.Error{
+			Code: global.ErrorSystemError,
+			Msg:  err.Error(),
+		}
+		result.Errors = &errorCode
+		return result
+	}
+	result.LastKeyAcross = &lastKeyAcross
 	return result
 
 }
