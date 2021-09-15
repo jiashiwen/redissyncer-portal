@@ -847,7 +847,7 @@ func GetLastKeyAcrossTime(model model.TaskIDBody) response.LastKeyAcrossResult {
 	}
 
 	lastKeyAcross := global.LastKeyAcross{}
-	if err := json.Unmarshal(resp.Kvs[0].Value, lastKeyAcross); err != nil {
+	if err := json.Unmarshal(resp.Kvs[0].Value, &lastKeyAcross); err != nil {
 		errorCode := global.Error{
 			Code: global.ErrorSystemError,
 			Msg:  err.Error(),
