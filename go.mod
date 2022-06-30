@@ -1,53 +1,86 @@
 module redissyncer-portal
 
-go 1.15
+go 1.18
 
 require (
-	github.com/SermoDigital/jose v0.9.2-0.20180104203859-803625baeddc // indirect
-	github.com/apache/calcite-avatica-go/v3 v3.2.0 // indirect
-	github.com/chzyer/logex v1.1.10 // indirect
-	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e // indirect
-	github.com/chzyer/test v0.0.0-20180213035817-a1ea475d72b1 // indirect
-	github.com/coreos/etcd v3.3.25+incompatible
-	github.com/coreos/go-systemd v0.0.0-20191104093116-d3cd4ed1dbcf // indirect
-	github.com/cznic/b v0.0.0-20181122101859-a26611c4d92d // indirect
-	github.com/cznic/fileutil v0.0.0-20181122101858-4d67cfea8c87 // indirect
-	github.com/cznic/golex v0.0.0-20181122101858-9c343928389c // indirect
-	github.com/cznic/internal v0.0.0-20181122101858-3279554c546e // indirect
-	github.com/cznic/mathutil v0.0.0-20181122101859-297441e03548 // indirect
-	github.com/cznic/ql v1.2.0 // indirect
-	github.com/cznic/sortutil v0.0.0-20181122101858-f5f958428db8 // indirect
-	github.com/cznic/strutil v0.0.0-20181122101858-275e90344537 // indirect
-	github.com/cznic/zappy v0.0.0-20181122101859-ca47d358d4b1 // indirect
-	github.com/deckarep/golang-set v1.7.1
-	github.com/dustin/go-humanize v1.0.0 // indirect
-	github.com/fastly/go-utils v0.0.0-20180712184237-d95a45783239 // indirect
-	github.com/fsnotify/fsnotify v1.4.9
+	github.com/coreos/etcd v3.3.27+incompatible
+	github.com/deckarep/golang-set v1.8.0
+	github.com/fsnotify/fsnotify v1.5.4
 	github.com/fvbock/endless v0.0.0-20170109170031-447134032cb6
-	github.com/gin-gonic/gin v1.6.3
-	github.com/go-redis/redis/v7 v7.4.0
-	github.com/gofrs/uuid v3.3.0+incompatible
-	github.com/golang/protobuf v1.4.3 // indirect
-	github.com/google/uuid v1.2.0 // indirect
-	github.com/jackc/fake v0.0.0-20150926172116-812a484cc733 // indirect
-	github.com/jackc/pgx v3.3.0+incompatible // indirect
-	github.com/jehiah/go-strftime v0.0.0-20171201141054-1d33003b3869 // indirect
-	github.com/json-iterator/go v1.1.9
-	github.com/kshvakov/clickhouse v1.3.5 // indirect
+	github.com/gin-gonic/gin v1.8.1
+	github.com/go-redis/redis/v7 v7.4.1
+	github.com/gofrs/uuid v4.2.0+incompatible
+	github.com/json-iterator/go v1.1.12
 	github.com/lestrrat-go/file-rotatelogs v2.4.0+incompatible
-	github.com/lestrrat-go/strftime v1.0.3 // indirect
-	github.com/mattn/go-shellwords v1.0.11 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/satori/go.uuid v1.2.0
-	github.com/spf13/cobra v1.1.3
-	github.com/spf13/viper v1.7.1
-	github.com/tebeka/strftime v0.1.5 // indirect
-	github.com/tidwall/gjson v1.6.8
-	go.uber.org/zap v1.16.0
-	google.golang.org/grpc/examples v0.0.0-20210311221743-f168a3cb3bf5 // indirect
+	github.com/spf13/cobra v1.5.0
+	github.com/spf13/viper v1.12.0
+	github.com/tidwall/gjson v1.14.1
+	go.uber.org/zap v1.21.0
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
-	gopkg.in/rana/ora.v4 v4.1.15 // indirect
 	gopkg.in/yaml.v2 v2.4.0
+)
+
+require (
+	github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973 // indirect
+	github.com/coreos/bbolt v1.3.2 // indirect
+	github.com/coreos/go-semver v0.3.0 // indirect
+	github.com/coreos/go-systemd v0.0.0-20191104093116-d3cd4ed1dbcf // indirect
+	github.com/coreos/pkg v0.0.0-20180928190104-399ea9e2e55f // indirect
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
+	github.com/dustin/go-humanize v1.0.0 // indirect
+	github.com/gin-contrib/sse v0.1.0 // indirect
+	github.com/go-playground/locales v0.14.0 // indirect
+	github.com/go-playground/universal-translator v0.18.0 // indirect
+	github.com/go-playground/validator/v10 v10.11.0 // indirect
+	github.com/goccy/go-json v0.9.8 // indirect
+	github.com/gogo/protobuf v1.3.2 // indirect
+	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/google/uuid v1.3.0 // indirect
+	github.com/gorilla/websocket v1.4.2 // indirect
+	github.com/grpc-ecosystem/go-grpc-middleware v1.0.0 // indirect
+	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0 // indirect
+	github.com/grpc-ecosystem/grpc-gateway v1.16.0 // indirect
+	github.com/hashicorp/hcl v1.0.0 // indirect
+	github.com/inconshreveable/mousetrap v1.0.0 // indirect
+	github.com/jonboulle/clockwork v0.1.0 // indirect
+	github.com/leodido/go-urn v1.2.1 // indirect
+	github.com/lestrrat-go/strftime v1.0.6 // indirect
+	github.com/magiconair/properties v1.8.6 // indirect
+	github.com/mattn/go-isatty v0.0.14 // indirect
+	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
+	github.com/mitchellh/mapstructure v1.5.0 // indirect
+	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
+	github.com/modern-go/reflect2 v1.0.2 // indirect
+	github.com/pelletier/go-toml v1.9.5 // indirect
+	github.com/pelletier/go-toml/v2 v2.0.2 // indirect
+	github.com/prometheus/client_golang v0.9.1 // indirect
+	github.com/prometheus/common v0.0.0-20181113130724-41aa239b4cce // indirect
+	github.com/prometheus/procfs v0.0.0-20181005140218-185b4288413d // indirect
+	github.com/sirupsen/logrus v1.8.1 // indirect
+	github.com/soheilhy/cmux v0.1.4 // indirect
+	github.com/spf13/afero v1.8.2 // indirect
+	github.com/spf13/cast v1.5.0 // indirect
+	github.com/spf13/jwalterweatherman v1.1.0 // indirect
+	github.com/spf13/pflag v1.0.5 // indirect
+	github.com/subosito/gotenv v1.4.0 // indirect
+	github.com/tidwall/match v1.1.1 // indirect
+	github.com/tidwall/pretty v1.2.0 // indirect
+	github.com/tmc/grpc-websocket-proxy v0.0.0-20190109142713-0ad062ec5ee5 // indirect
+	github.com/ugorji/go/codec v1.2.7 // indirect
+	github.com/xiang90/probing v0.0.0-20190116061207-43a291ad63a2 // indirect
+	go.uber.org/atomic v1.9.0 // indirect
+	go.uber.org/multierr v1.8.0 // indirect
+	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d // indirect
+	golang.org/x/net v0.0.0-20220624214902-1bab6f366d9e // indirect
+	golang.org/x/sys v0.0.0-20220627191245-f75cf1eec38b // indirect
+	golang.org/x/text v0.3.7 // indirect
+	google.golang.org/genproto v0.0.0-20220628213854-d9e0b6570c03 // indirect
+	google.golang.org/grpc v1.47.0 // indirect
+	google.golang.org/protobuf v1.28.0 // indirect
+	gopkg.in/ini.v1 v1.66.6 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 	sigs.k8s.io/yaml v1.2.0 // indirect
 )
 

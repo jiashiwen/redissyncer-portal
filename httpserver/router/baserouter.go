@@ -1,16 +1,28 @@
 package router
 
 import (
-	"github.com/gin-gonic/gin"
 	"redissyncer-portal/httpserver/api"
+
+	"github.com/gin-gonic/gin"
 )
 
 func InitBaseRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
 	BaseRouter := Router.Group("base")
 	{
-		//BaseRouter.POST("login", v1.Login)
+		// BaseRouter.POST("login", v1.Login)
 		//BaseRouter.POST("captcha", v1.Captcha)
-		BaseRouter.GET("health", api.Health)
+		// BaseRouter.GET("health", api.Health)
+
+	}
+
+	return BaseRouter
+}
+
+func InitTestAuthRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
+	BaseRouter := Router.Group("/")
+	{
+
+		BaseRouter.GET("testauth", api.AuthResult)
 
 	}
 

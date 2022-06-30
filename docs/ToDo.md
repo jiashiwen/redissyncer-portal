@@ -49,3 +49,7 @@
     - [x] redissycner集群测试安装，包括etcd集群以及portal及server节点安装
     - [X] nginx代理服务器反向代理 portal
     - [ ] 测试环境，包括集群etcd ，redis3-6各个版本的单实例版本*2，redis集群版6套
+
+* 辅助功能及特性
+  - [x] http server 跨域访问能力
+  - [ ] 权限系统粗粒度实现：拦截器使用checktoken middleware，每次检查token，login 根据用户名和密码发放token

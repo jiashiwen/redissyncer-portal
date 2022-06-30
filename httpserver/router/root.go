@@ -1,12 +1,22 @@
 package router
 
 import (
+	"redissyncer-portal/global"
+	"redissyncer-portal/httpserver/middleware"
+
 	"github.com/gin-gonic/gin"
 )
 
 // 初始化总路由
 
 func RootRouter() *gin.Engine {
+
+	// var secrets = gin.H{
+	// 	"foo":    gin.H{"email": "foo@bar.com", "phone": "123433"},
+	// 	"austin": gin.H{"email": "austin@example.com", "phone": "666"},
+	// 	"lena":   gin.H{"email": "lena@guapa.com", "phone": "523443"},
+	// }
+
 	var Router = gin.Default()
 	// 为用户头像和文件提供静态地址
 	//Router.StaticFS(global.RSPConfig.Local.Path, httpserver.Dir(global.GVA_CONFIG.Local.Path))
@@ -17,10 +27,10 @@ func RootRouter() *gin.Engine {
 	//global.RSPLog.Info("use middleware logger")
 
 	// 跨域
-	//Router.Use(middleware.Cors())
-	//global.GVA_LOG.Info("use middleware cors")
-	//Router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-	//global.RSPLog.Info("register swagger handler")
+	Router.Use(middleware.Cors())
+	global.RSPLog.Info("use middleware cors")
+	// Router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	// global.RSPLog.Info("register swagger handler")
 
 	// 方便统一添加路由组前缀 多服务器上线使用
 	PublicGroup := Router.Group("")
@@ -31,6 +41,22 @@ func RootRouter() *gin.Engine {
 		InitNodeRouter(PublicGroup)
 		InitDefaultRouter(PublicGroup)
 	}
+
+	PrivateGroup := Router.Group("")
+	PrivateGroup.Use(middleware.CheckToken())
+	{
+		InitTestAuthRouter(PrivateGroup)
+	}
+	// PrivateGroup.Use(gin.BasicAuth(gin.Accounts{
+	// 	"foo":    "bar",
+	// 	"austin": "1234",
+	// 	"lena":   "hello2",
+	// 	"manu":   "4321",
+	// }))
+	// {
+	// 	InitTestAuthRouter(PrivateGroup)
+	// }
+
 	//PrivateGroup := Router.Group("")
 	//PrivateGroup.Use(middleware.JWTAuth()).Use(middleware.CasbinHandler())
 	//{
